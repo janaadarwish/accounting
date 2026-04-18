@@ -1,81 +1,89 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>شاشة القيود - النظام المحاسبي</title>
+  <title>Journal Entries - Accounting System</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
   <link rel="stylesheet" href="style.css" />
   <style>
-    .line-item { grid-template-columns: 2.5fr 1fr 1fr auto; }
-    .side-debit  { color: var(--green) !important; font-weight: 700; }
-    .side-credit { color: var(--red)   !important; font-weight: 700; }
+    :root {
+      --green: #2ecc71;
+      --red: #e74c3c;
+      --border: #ddd;
+      --surface2: #f9f9f9;
+    }
+    .line-item { 
+      display: grid; 
+      grid-template-columns: 2.5fr 1fr 1fr auto; 
+      gap: 10px; 
+      margin-bottom: 10px;
+    }
+    .side-debit { color: var(--green) !important; font-weight: 700; }
+    .side-credit { color: var(--red) !important; font-weight: 700; }
+    .badge-error { background: var(--red); color: white; padding: 5px; border-radius: 4px; }
   </style>
 </head>
 <body>
 
 <nav class="navbar">
-  <div class="logo">⚖️ <span>النظام</span> المحاسبي</div>
+  <div class="logo">⚖️ <span>Accounting</span> System</div>
   <ul class="nav-links">
-    <li><a href="index.html" class="active">📝 <span>القيود</span></a></li>
-    <li><a href="trial-balance.html">📊 <span>ميزان المراجعة</span></a></li>
-    <li><a href="income-statement.html">📈 <span>قائمة الدخل</span></a></li>
-    <li><a href="balance-sheet.html">🏦 <span>الميزانية</span></a></li>
-    <li><a href="dashboard.html">🖥️ <span>الداشبورد</span></a></li>
+    <li><a href="index.html" class="active">📝 Entries</a></li>
+    <li><a href="trial-balance.html">📊 Trial Balance</a></li>
+    <li><a href="income-statement.html">📈 Income Statement</a></li>
+    <li><a href="balance-sheet.html">🏦 Balance Sheet</a></li>
+    <li><a href="dashboard.html">🖥️ Dashboard</a></li>
   </ul>
 </nav>
 
 <div class="page">
   <div class="page-header">
-    <h1>📝 شاشة إدخال القيود اليومية</h1>
-    <p>كل سطر = حساب واحد + نوعه (مدين أو دائن) — لازم يتوازن القيد</p>
+    <h1>📝 Daily Journal Entries</h1>
+    <p>Every entry must balance: Total Debits = Total Credits</p>
+    <div style="margin-top: 10px;">
+        <button class="btn btn-primary" onclick="document.getElementById('excelInput').click()">📤 Import from Excel</button>
+        <input type="file" id="excelInput" style="display:none" accept=".xlsx, .xls" onchange="handleExcel(event)" />
+    </div>
   </div>
 
-  <!-- Entry Form -->
   <div class="card" style="margin-bottom:1.5rem">
-    <div class="card-title">➕ قيد جديد</div>
+    <div class="card-title">➕ New Entry</div>
 
     <div class="form-grid" style="margin-bottom:1rem">
       <div class="form-group">
-        <label>📅 تاريخ القيد</label>
+        <label>📅 Date</label>
         <input type="date" id="entryDate" />
       </div>
       <div class="form-group" style="grid-column: span 2">
-        <label>📌 البيان / الوصف</label>
-        <input type="text" id="entryDesc" placeholder="مثال: دفع إيجار شهر يناير" />
+        <label>📌 Description</label>
+        <input type="text" id="entryDesc" placeholder="e.g., Office Rent Payment" />
       </div>
       <div class="form-group">
-        <label>🔢 رقم القيد</label>
-        <input type="text" id="entryNumber" placeholder="تلقائي" readonly style="opacity:0.6" />
+        <label>🔢 Entry ID</label>
+        <input type="text" id="entryNumber" readonly style="opacity:0.6" />
       </div>
-    </div>
-
-    <!-- Column Headers -->
-    <div class="section-label">📋 بنود القيد</div>
-    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr auto;gap:0.75rem;padding:0 0.75rem;margin-bottom:0.4rem">
-      <span style="font-size:0.78rem;color:var(--text2);font-weight:700">الحساب</span>
-      <span style="font-size:0.78rem;color:var(--text2);font-weight:700">النوع</span>
-      <span style="font-size:0.78rem;color:var(--text2);font-weight:700">المبلغ (EGP)</span>
-      <span></span>
     </div>
 
     <div id="lineItems"></div>
 
     <button class="btn btn-ghost" onclick="addLine()" style="margin-top:0.5rem; margin-bottom:1.2rem">
-      ➕ إضافة سطر
+      ➕ Add Line
     </button>
 
-    <!-- Totals -->
     <div style="display:flex; gap:1rem; justify-content:flex-end; flex-wrap:wrap; margin-bottom:1rem">
-      <div class="stat-card green" style="min-width:160px; padding:0.9rem 1.2rem">
-        <div class="stat-label">إجمالي المدين</div>
-        <div class="stat-value green" id="totalDebit">0.00</div>
+      <div class="stat-card">
+        <div class="stat-label">Total Debit</div>
+        <div class="stat-value side-debit" id="totalDebit">0.00</div>
       </div>
-      <div class="stat-card red" style="min-width:160px; padding:0.9rem 1.2rem">
-        <div class="stat-label">إجمالي الدائن</div>
-        <div class="stat-value red" id="totalCredit">0.00</div>
+      <div class="stat-card">
+        <div class="stat-label">Total Credit</div>
+        <div class="stat-value side-credit" id="totalCredit">0.00</div>
       </div>
-      <div class="stat-card" id="balanceCard" style="min-width:160px; padding:0.9rem 1.2rem; border:2px solid var(--border)">
-        <div class="stat-label">الفرق</div>
+      <div class="stat-card" id="balanceCard">
+        <div class="stat-label">Difference</div>
         <div class="stat-value" id="balanceDiff">0.00</div>
       </div>
     </div>
@@ -83,21 +91,13 @@
     <div id="formAlert"></div>
 
     <div style="display:flex; gap:0.75rem; justify-content:flex-end">
-      <button class="btn btn-ghost" onclick="clearForm()">🗑️ مسح</button>
-      <button class="btn btn-primary" onclick="saveEntry()">💾 حفظ القيد</button>
+      <button class="btn btn-ghost" onclick="clearForm()">🗑️ Clear</button>
+      <button class="btn btn-primary" onclick="saveEntry()">💾 Save Entry</button>
     </div>
   </div>
 
-  <!-- Entries List -->
   <div class="card">
-    <div class="card-title" style="justify-content:space-between">
-      <span>📋 القيود المحفوظة</span>
-      <div style="display:flex;gap:0.5rem;align-items:center">
-        <input type="text" id="searchBox" placeholder="🔍 بحث..." oninput="renderEntries()"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.75rem;color:var(--text);font-family:Tajawal,sans-serif;font-size:0.85rem;outline:none;direction:rtl;width:180px"/>
-        <button class="btn btn-danger" onclick="confirmClearAll()" style="font-size:0.82rem;padding:0.4rem 0.9rem">🗑️ حذف الكل</button>
-      </div>
-    </div>
+    <div class="card-title">📋 Saved Entries</div>
     <div id="entriesContainer"></div>
   </div>
 </div>
@@ -106,246 +106,141 @@
 <script>
   let lineCount = 0;
 
+
   window.onload = () => {
     document.getElementById('entryDate').valueAsDate = new Date();
     updateEntryNumber();
-    addLine('debit');   // سطر مدين افتراضي
-    addLine('credit');  // سطر دائن افتراضي
+    addLine('debit'); 
+    addLine('credit');
     renderEntries();
   };
+
+  function handleExcel(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet);
+      
+      const entries = loadEntries();
+      json.forEach(row => {
+        const entry = {
+          id: `QID-${String(entries.length + 1).padStart(4, '0')}`,
+          date: row.Date || new Date().toISOString().split('T')[0],
+          desc: row.Description || "Excel Import",
+          lines: [
+            { code: row.DebitAccount, debit: parseFloat(row.Amount) || 0, credit: 0 },
+            { code: row.CreditAccount, debit: 0, credit: parseFloat(row.Amount) || 0 }
+          ]
+        };
+        entries.push(entry);
+      });
+      saveEntries(entries);
+      renderEntries();
+      alert("Import Successful!");
+    };
+    reader.readAsArrayBuffer(file);
+  }
 
   function updateEntryNumber() {
     const entries = loadEntries();
     document.getElementById('entryNumber').value = `QID-${String(entries.length + 1).padStart(4, '0')}`;
   }
 
-  // ===== LINE ITEMS =====
-  // كل سطر = حساب واحد + نوع (مدين أو دائن بس) + مبلغ
   function addLine(defaultSide = '') {
     lineCount++;
     const id = `line_${lineCount}`;
-    const accounts = getLeafAccounts();
+    const accounts = typeof getLeafAccounts === 'function' ? getLeafAccounts() : [];
 
     const div = document.createElement('div');
     div.className = 'line-item';
     div.id = id;
     div.innerHTML = `
-      <div class="form-group" style="margin:0">
-        <select onchange="calcTotals()" style="width:100%">
-          <option value="">-- اختر الحساب --</option>
-          ${accounts.map(a => `<option value="${a.code}" data-type="${a.type}">${a.code} | ${a.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group" style="margin:0">
-        <select class="side-select" onchange="updateSideColor(this); calcTotals()" style="width:100%;font-weight:700">
-          <option value="">-- --</option>
-          <option value="debit"  ${defaultSide === 'debit'  ? 'selected' : ''}>مدين ↑</option>
-          <option value="credit" ${defaultSide === 'credit' ? 'selected' : ''}>دائن ↓</option>
-        </select>
-      </div>
-      <div class="form-group" style="margin:0">
-        <input type="number" min="0" step="0.01" placeholder="0.00"
-          oninput="calcTotals()" class="amount-input" style="width:100%" />
-      </div>
-      <button class="btn btn-danger" onclick="removeLine('${id}')"
-        style="padding:0.5rem 0.75rem;align-self:center">✕</button>
+      <div class="form-group"><select onchange="calcTotals()">
+          <option value="">-- Select Account --</option>
+          ${accounts.map(a => `<option value="${a.code}">${a.code} | ${a.name}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><select class="side-select" onchange="updateSideColor(this); calcTotals()">
+          <option value="debit" ${defaultSide === 'debit' ? 'selected' : ''}>Debit ↑</option>
+          <option value="credit" ${defaultSide === 'credit' ? 'selected' : ''}>Credit ↓</option>
+      </select></div>
+      <div class="form-group"><input type="number" step="0.01" class="amount-input" oninput="calcTotals()" placeholder="0.00" /></div>
+      <button class="btn btn-danger" onclick="removeLine('${id}')">✕</button>
     `;
     document.getElementById('lineItems').appendChild(div);
-
-    if (defaultSide) {
-      updateSideColor(div.querySelector('.side-select'));
-    }
+    updateSideColor(div.querySelector('.side-select'));
   }
 
   function updateSideColor(sel) {
-    sel.classList.remove('side-debit', 'side-credit');
-    if (sel.value === 'debit')  sel.classList.add('side-debit');
-    if (sel.value === 'credit') sel.classList.add('side-credit');
-  }
-
-  function removeLine(id) {
-    const el = document.getElementById(id);
-    if (el) { el.remove(); calcTotals(); }
+    sel.classList.toggle('side-debit', sel.value === 'debit');
+    sel.classList.toggle('side-credit', sel.value === 'credit');
   }
 
   function calcTotals() {
-    let debit = 0, credit = 0;
+    let d = 0, c = 0;
     document.querySelectorAll('.line-item').forEach(row => {
-      const side   = row.querySelector('.side-select').value;
-      const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
-      if (side === 'debit')  debit  += amount;
-      if (side === 'credit') credit += amount;
+      const side = row.querySelector('.side-select').value;
+      const amt = parseFloat(row.querySelector('.amount-input').value) || 0;
+      if (side === 'debit') d += amt; else c += amt;
     });
 
-    document.getElementById('totalDebit').textContent  = fmt(debit);
-    document.getElementById('totalCredit').textContent = fmt(credit);
+    d = Math.round(d * 100) / 100;
+    c = Math.round(c * 100) / 100;
 
-    const diff = Math.abs(debit - credit);
-    const diffEl = document.getElementById('balanceDiff');
-    const card   = document.getElementById('balanceCard');
-    diffEl.textContent = fmt(diff);
-
-    if (diff < 0.01 && debit > 0) {
-      diffEl.style.color     = 'var(--green)';
-      card.style.borderColor = 'var(--green)';
-    } else {
-      diffEl.style.color     = 'var(--red)';
-      card.style.borderColor = 'var(--red)';
-    }
+    document.getElementById('totalDebit').textContent = d.toFixed(2);
+    document.getElementById('totalCredit').textContent = c.toFixed(2);
+    const diff = Math.abs(d - c);
+    document.getElementById('balanceDiff').textContent = diff.toFixed(2);
+    document.getElementById('balanceCard').style.borderColor = diff < 0.01 ? 'var(--green)' : 'var(--red)';
   }
 
-  // ===== SAVE ENTRY =====
   function saveEntry() {
-    const date    = document.getElementById('entryDate').value;
-    const desc    = document.getElementById('entryDesc').value.trim();
-    const alertEl = document.getElementById('formAlert');
-
-    if (!date) return showAlert(alertEl, 'error', '⚠️ الرجاء تحديد تاريخ القيد');
-    if (!desc) return showAlert(alertEl, 'error', '⚠️ الرجاء كتابة البيان');
-
-    const lines = [];
-    document.querySelectorAll('.line-item').forEach(row => {
-      const code   = row.querySelector('select').value;
-      const side   = row.querySelector('.side-select').value;
-      const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
-
-      if (code && side && amount > 0) {
-        const acc = getAccount(code);
-        lines.push({
-          code,
-          name:   acc?.name || '',
-          type:   acc?.type || '',
-          debit:  side === 'debit'  ? amount : 0,
-          credit: side === 'credit' ? amount : 0,
-        });
-      }
-    });
-
-    if (lines.length < 2)
-      return showAlert(alertEl, 'error', '⚠️ يجب إضافة سطرين على الأقل (مدين ودائن)');
-
-    const totalD = lines.reduce((s, l) => s + l.debit,  0);
-    const totalC = lines.reduce((s, l) => s + l.credit, 0);
-
-    if (totalD === 0 || totalC === 0)
-      return showAlert(alertEl, 'error', '⚠️ القيد يجب أن يحتوي على مدين ودائن في آنٍ واحد');
-
-    if (Math.abs(totalD - totalC) > 0.01)
-      return showAlert(alertEl, 'error', `⚠️ القيد غير متوازن — مدين: ${fmt(totalD)} / دائن: ${fmt(totalC)}`);
-
-    const entries = loadEntries();
-    const entry = {
-      id: `QID-${String(entries.length + 1).padStart(4, '0')}`,
-      date, desc, lines,
-      createdAt: new Date().toISOString()
-    };
-    entries.push(entry);
-    saveEntries(entries);
-
-    showAlert(alertEl, 'success', `✅ تم حفظ القيد ${entry.id} بنجاح`);
-    clearForm();
-    renderEntries();
-    updateEntryNumber();
-  }
-
-  function clearForm() {
-    document.getElementById('entryDesc').value = '';
-    document.getElementById('lineItems').innerHTML = '';
-    lineCount = 0;
-    addLine('debit');
-    addLine('credit');
-    calcTotals();
-    document.getElementById('formAlert').innerHTML = '';
-    updateEntryNumber();
-  }
-
-  // ===== RENDER ENTRIES =====
-  function renderEntries() {
-    const entries   = loadEntries();
-    const search    = document.getElementById('searchBox').value.toLowerCase();
-    const container = document.getElementById('entriesContainer');
-
-    const filtered = entries.filter(e =>
-      e.id.toLowerCase().includes(search) ||
-      e.desc.toLowerCase().includes(search) ||
-      e.date.includes(search)
-    );
-
-    if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>لا توجد قيود</h3><p>ابدأ بإدخال أول قيد محاسبي</p></div>`;
+    const d = parseFloat(document.getElementById('totalDebit').textContent);
+    const c = parseFloat(document.getElementById('totalCredit').textContent);
+    
+    if (Math.abs(d - c) > 0.01 || d === 0) {
+      alert("Entry is not balanced!");
       return;
     }
 
-    container.innerHTML = [...filtered].reverse().map(e => {
-      const totalD = e.lines.reduce((s, l) => s + l.debit, 0);
-      return `
-        <div style="border:1px solid var(--border);border-radius:10px;margin-bottom:0.75rem;overflow:hidden">
-          <div style="background:var(--surface2);padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
-            <div style="display:flex;gap:1rem;align-items:center">
-              <span class="badge badge-gold">${e.id}</span>
-              <span style="font-weight:600">${e.desc}</span>
-            </div>
-            <div style="display:flex;gap:0.75rem;align-items:center">
-              <span style="color:var(--text2);font-size:0.82rem">📅 ${e.date}</span>
-              <span class="badge badge-green">EGP ${fmt(totalD)}</span>
-              <button class="btn btn-danger" onclick="deleteEntry('${e.id}')" style="padding:0.3rem 0.6rem;font-size:0.78rem">🗑️</button>
-            </div>
-          </div>
-          <div class="table-wrap" style="border:none;border-radius:0">
-            <table>
-              <thead><tr>
-                <th>كود الحساب</th><th>اسم الحساب</th><th>النوع</th>
-                <th style="color:var(--green)">مدين ↑</th>
-                <th style="color:var(--red)">دائن ↓</th>
-              </tr></thead>
-              <tbody>
-                ${e.lines.map(l => `
-                  <tr>
-                    <td><code style="color:var(--accent);font-size:0.82rem">${l.code}</code></td>
-                    <td>${l.name}</td>
-                    <td>${typeLabel(l.type)}</td>
-                    <td style="color:var(--green);font-weight:600">${l.debit  > 0 ? fmt(l.debit)  : '—'}</td>
-                    <td style="color:var(--red);font-weight:600">${l.credit > 0 ? fmt(l.credit) : '—'}</td>
-                  </tr>`).join('')}
-              </tbody>
-              <tr class="tfoot-row">
-                <td colspan="3">الإجمالي</td>
-                <td>${fmt(e.lines.reduce((s,l) => s + l.debit,  0))}</td>
-                <td>${fmt(e.lines.reduce((s,l) => s + l.credit, 0))}</td>
-              </tr>
-            </table>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  function typeLabel(type) {
-    const map = {
-      asset:     '<span class="badge badge-blue">أصول</span>',
-      liability: '<span class="badge badge-red">التزامات</span>',
-      equity:    '<span class="badge badge-gold">حقوق ملكية</span>',
-      expense:   '<span class="badge badge-red">مصروفات</span>',
-      revenue:   '<span class="badge badge-green">إيرادات</span>'
+    const entry = {
+      id: document.getElementById('entryNumber').value,
+      date: document.getElementById('entryDate').value,
+      desc: document.getElementById('entryDesc').value,
+      lines: []
     };
-    return map[type] || type;
-  }
 
-  function deleteEntry(id) {
-    if (!confirm(`هل تريد حذف القيد ${id}؟`)) return;
-    saveEntries(loadEntries().filter(e => e.id !== id));
+    document.querySelectorAll('.line-item').forEach(row => {
+        entry.lines.push({
+            code: row.querySelector('select').value,
+            debit: row.querySelector('.side-select').value === 'debit' ? parseFloat(row.querySelector('.amount-input').value) : 0,
+            credit: row.querySelector('.side-select').value === 'credit' ? parseFloat(row.querySelector('.amount-input').value) : 0
+        });
+    });
+
+    const entries = loadEntries();
+    entries.push(entry);
+    saveEntries(entries);
+    clearForm();
     renderEntries();
   }
 
-  function confirmClearAll() {
-    if (!confirm('⚠️ هل تريد حذف جميع القيود؟ لا يمكن التراجع.')) return;
-    saveEntries([]);
-    renderEntries();
-    updateEntryNumber();
-  }
+  function loadEntries() { return JSON.parse(localStorage.getItem('journal_entries') || '[]'); }
+  function saveEntries(e) { localStorage.setItem('journal_entries', JSON.stringify(e)); }
+  function clearForm() { location.reload(); }
 
-  function showAlert(el, type, msg) {
-    el.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'error'}" style="margin-bottom:0.75rem">${msg}</div>`;
-    if (type === 'success') setTimeout(() => el.innerHTML = '', 3000);
+  function renderEntries() {
+    const container = document.getElementById('entriesContainer');
+    const entries = loadEntries();
+    container.innerHTML = entries.map(e => `
+        <div style="border:1px solid #ddd; margin: 10px 0; padding: 10px;">
+            <strong>${e.id} - ${e.date}</strong>: ${e.desc}
+            <hr>
+            ${e.lines.map(l => `<div>${l.code}: ${l.debit > 0 ? 'Dr ' + l.debit : 'Cr ' + l.credit}</div>`).join('')}
+        </div>
+    `).join('');
   }
 </script>
 </body>

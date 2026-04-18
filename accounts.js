@@ -1,193 +1,84 @@
-// ===== دليل الحسابات =====
+
 const ACCOUNTS = [
-  // الأصول
-  { code: "1", name: "الأصول", level: 1, type: "asset" },
-  { code: "101", name: "الأصول الثابتة", level: 2, type: "asset" },
-  { code: "101001", name: "الأصول الثابتة - ثلاجات التبريد", level: 3, type: "asset" },
-  { code: "101001001", name: "ثلاجة التبريد - 1", level: 4, type: "asset" },
-  { code: "101001002", name: "ثلاجة التبريد - 2", level: 4, type: "asset" },
-  { code: "101001003", name: "ثلاجة التبريد - 3", level: 4, type: "asset" },
-  { code: "101002", name: "الأصول الثابتة - كباسات التبريد", level: 3, type: "asset" },
-  { code: "101002001", name: "كباسات تبريد - 1", level: 4, type: "asset" },
-  { code: "101002002", name: "كباسات تبريد - 2", level: 4, type: "asset" },
-  { code: "101003", name: "الأصول الثابتة - كمبيوتر وطابعات وبرامج", level: 3, type: "asset" },
-  { code: "101003001", name: "كمبيوتر وطابعات - Laptop", level: 4, type: "asset" },
-  { code: "101003002", name: "كمبيوتر وطابعات - Desktop", level: 4, type: "asset" },
-  { code: "101003003", name: "كمبيوتر وطابعات - طابعات", level: 4, type: "asset" },
-  { code: "101003004", name: "كمبيوتر وطابعات - ماكينة تصوير", level: 4, type: "asset" },
-  { code: "101003005", name: "كمبيوتر وطابعات - تابلت", level: 4, type: "asset" },
-  { code: "101004", name: "الأصول الثابتة - ماكينات التعبئة والتغليف", level: 3, type: "asset" },
-  { code: "101004001", name: "ماكينات التعبئة والتغليف - 1", level: 4, type: "asset" },
-  { code: "101004002", name: "ماكينات التعبئة والتغليف - 2", level: 4, type: "asset" },
-  { code: "101005", name: "الأصول الثابتة - الميزان الإلكتروني", level: 3, type: "asset" },
-  { code: "101005001", name: "الميزان الإلكتروني - 1", level: 4, type: "asset" },
-  { code: "102", name: "البنوك والنقدية", level: 2, type: "asset" },
-  { code: "102001", name: "حسابات البنوك", level: 3, type: "asset" },
-  { code: "102001001", name: "حساب بنك CIB - بالجنيه المصري", level: 4, type: "asset" },
-  { code: "102001002", name: "حساب بنك CIB - بالدولار", level: 4, type: "asset" },
-  { code: "102001003", name: "حساب بنك CPS - CIB", level: 4, type: "asset" },
-  { code: "102002", name: "حسابات النقدية", level: 3, type: "asset" },
-  { code: "102002001", name: "نقدية بالخزينة - بالجنيه المصري", level: 4, type: "asset" },
-  { code: "102002002", name: "نقدية بالخزينة - بالدولار", level: 4, type: "asset" },
-  { code: "102003", name: "العهد المؤقتة", level: 3, type: "asset" },
-  { code: "102003001", name: "العهد المؤقتة - 1", level: 4, type: "asset" },
-  { code: "103", name: "العملاء", level: 2, type: "asset" },
-  { code: "103001", name: "عملاء - محليين", level: 3, type: "asset" },
-  { code: "103001001", name: "عملاء محليين - 1", level: 4, type: "asset" },
-  { code: "103001002", name: "عملاء محليين - 2", level: 4, type: "asset" },
-  { code: "103002", name: "عملاء - جملة", level: 3, type: "asset" },
-  { code: "103002001", name: "عملاء جملة - 1", level: 4, type: "asset" },
-  { code: "103003", name: "عملاء - تصدير", level: 3, type: "asset" },
-  { code: "103003001", name: "عملاء تصدير - 1", level: 4, type: "asset" },
-  { code: "104", name: "مدينون متنوعون", level: 2, type: "asset" },
-  { code: "104001", name: "الإيرادات المستحقة", level: 3, type: "asset" },
-  { code: "104001001", name: "إيرادات مستحقة - 1", level: 4, type: "asset" },
-  { code: "104002", name: "المصروفات المقدمة", level: 3, type: "asset" },
-  { code: "104002001", name: "مصروفات مقدمة - 1", level: 4, type: "asset" },
-  { code: "104003", name: "تأمينات لدى الغير", level: 3, type: "asset" },
-  { code: "104003001", name: "تأمينات لدى الغير - 1", level: 4, type: "asset" },
-  { code: "104004", name: "ضرائب مدينة", level: 3, type: "asset" },
-  { code: "104004001", name: "ضرائب مدينة - خصم من المنبع", level: 4, type: "asset" },
-  { code: "104005", name: "أرصدة مدينة أخرى", level: 3, type: "asset" },
-  { code: "104005001", name: "أرصدة مدينة - سلف عاملين", level: 4, type: "asset" },
-  { code: "105", name: "المخزون", level: 2, type: "asset" },
-  { code: "105001", name: "مخزن - الثلاجة رقم 1", level: 3, type: "asset" },
-  { code: "105001001", name: "مخزون ثلاجة 1 - تمور خام", level: 4, type: "asset" },
-  { code: "105001002", name: "مخزون ثلاجة 1 - تمور تحت التشغيل", level: 4, type: "asset" },
-  { code: "105001003", name: "مخزون ثلاجة 1 - تمور جاهزة للبيع", level: 4, type: "asset" },
-  { code: "105002", name: "مخزن - الثلاجة رقم 2", level: 3, type: "asset" },
-  { code: "105002001", name: "مخزون ثلاجة 2 - تمور خام", level: 4, type: "asset" },
-  { code: "105002002", name: "مخزون ثلاجة 2 - تمور تحت التشغيل", level: 4, type: "asset" },
-  { code: "105002003", name: "مخزون ثلاجة 2 - تمور جاهزة للبيع", level: 4, type: "asset" },
-  { code: "105003", name: "مخزن - الثلاجة رقم 3", level: 3, type: "asset" },
-  { code: "105003001", name: "مخزون ثلاجة 3 - تمور خام", level: 4, type: "asset" },
-  { code: "105003002", name: "مخزون ثلاجة 3 - تمور تحت التشغيل", level: 4, type: "asset" },
-  { code: "105003003", name: "مخزون ثلاجة 3 - تمور جاهزة للبيع", level: 4, type: "asset" },
-  { code: "105004", name: "مخزن - مواد التعبئة والتغليف", level: 3, type: "asset" },
-  { code: "105004001", name: "مواد التعبئة والتغليف - كرتون", level: 4, type: "asset" },
-  { code: "105005", name: "مخزن - مواد ومهمات", level: 3, type: "asset" },
-  { code: "105005001", name: "مواد ومهمات - 1", level: 4, type: "asset" },
+  // ASSETS
+  { code: "1", name: "Assets", level: 1, type: "asset" },
+  { code: "101", name: "Fixed Assets", level: 2, type: "asset" },
+  { code: "101001", name: "Fixed Assets - Cold Storage", level: 3, type: "asset" },
+  { code: "101001001", name: "Refrigerator - 1", level: 4, type: "asset" },
+  { code: "101001002", name: "Refrigerator - 2", level: 4, type: "asset" },
+  { code: "101003", name: "Fixed Assets - IT Equipment", level: 3, type: "asset" },
+  { code: "101003001", name: "IT Equipment - Laptops", level: 4, type: "asset" },
+  { code: "101003002", name: "IT Equipment - Printers", level: 4, type: "asset" },
+  { code: "102", name: "Cash and Bank", level: 2, type: "asset" },
+  { code: "102001", name: "Bank Accounts", level: 3, type: "asset" },
+  { code: "102001001", name: "CIB Bank - EGP", level: 4, type: "asset" },
+  { code: "102001002", name: "CIB Bank - USD", level: 4, type: "asset" },
+  { code: "102002", name: "Cash Accounts", level: 3, type: "asset" },
+  { code: "102002001", name: "Cash on Hand - EGP", level: 4, type: "asset" },
+  { code: "103", name: "Accounts Receivable", level: 2, type: "asset" },
+  { code: "103001", name: "Local Customer - 1", level: 4, type: "asset" },
+  { code: "105", name: "Inventory", level: 2, type: "asset" },
+  { code: "105001", name: "Inventory - Raw Dates", level: 4, type: "asset" },
+  { code: "105002", name: "Inventory - Finished Goods", level: 4, type: "asset" },
 
-  // الالتزامات وحقوق الملكية
-  { code: "2", name: "الالتزامات وحقوق الملكية", level: 1, type: "liability" },
-  { code: "201", name: "حسابات رأس المال", level: 2, type: "equity" },
-  { code: "201001", name: "رأس المال المدفوع", level: 3, type: "equity" },
-  { code: "201001001", name: "رأس المال المدفوع - 1", level: 4, type: "equity" },
-  { code: "201002", name: "زيادة رأس المال", level: 3, type: "equity" },
-  { code: "201002001", name: "زيادة رأس المال - 1", level: 4, type: "equity" },
-  { code: "201003", name: "الأرباح والخسائر", level: 3, type: "equity" },
-  { code: "201003001", name: "أرباح وخسائر - العام الحالي", level: 4, type: "equity" },
-  { code: "201003002", name: "أرباح وخسائر - سنوات سابقة", level: 4, type: "equity" },
-  { code: "201003003", name: "تقييم حسابات جارية بالعملة الأجنبية", level: 4, type: "equity" },
-  { code: "202", name: "التزامات غير متداولة", level: 2, type: "liability" },
-  { code: "202001", name: "التزامات الإيجار", level: 3, type: "liability" },
-  { code: "202001001", name: "الإيجار - 1", level: 4, type: "liability" },
-  { code: "202002", name: "قروض طويلة الأجل", level: 3, type: "liability" },
-  { code: "202002001", name: "قروض طويلة الأجل - 1", level: 4, type: "liability" },
-  { code: "203", name: "التزامات متداولة", level: 2, type: "liability" },
-  { code: "203001", name: "الموردين", level: 3, type: "liability" },
-  { code: "203001001", name: "الموردين - 1", level: 4, type: "liability" },
-  { code: "203002", name: "المخصصات", level: 3, type: "liability" },
-  { code: "203002001", name: "مخصصات - 1", level: 4, type: "liability" },
-  { code: "203003", name: "حساب جاري الشركاء", level: 3, type: "liability" },
-  { code: "203003001", name: "حساب جاري الشركاء - 1", level: 4, type: "liability" },
-  { code: "203004", name: "ضرائب دائنة", level: 3, type: "liability" },
-  { code: "203004001", name: "ضرائب دائنة - ضرائب القيمة المضافة", level: 4, type: "liability" },
-  { code: "203004002", name: "ضرائب دائنة - ضرائب كسب العمل", level: 4, type: "liability" },
-  { code: "203004003", name: "ضرائب دائنة - أرباح تجارية 1%", level: 4, type: "liability" },
-  { code: "203004004", name: "ضرائب دائنة - أرباح تجارية 3%", level: 4, type: "liability" },
-  { code: "203004005", name: "ضرائب دائنة - أرباح تجارية 5%", level: 4, type: "liability" },
-  { code: "203004006", name: "ضرائب دائنة - ضرائب الدخل", level: 4, type: "liability" },
-  { code: "203004007", name: "ضرائب دائنة - تأمين صحي", level: 4, type: "liability" },
-  { code: "203004008", name: "ضرائب دائنة - ضريبة توزيعات أرباح", level: 4, type: "liability" },
-  { code: "203005", name: "المصروفات المستحقة", level: 3, type: "liability" },
-  { code: "203005001", name: "صافي المرتبات المستحقة", level: 4, type: "liability" },
-  { code: "203005002", name: "إيجارات مستحقة", level: 4, type: "liability" },
-  { code: "203005003", name: "مصروفات مستحقة - 1", level: 4, type: "liability" },
-  { code: "203006", name: "أرصدة دائنة أخرى", level: 3, type: "liability" },
-  { code: "203006001", name: "أرصدة دائنة - حصة الشركة", level: 4, type: "liability" },
-  { code: "203006002", name: "أرصدة دائنة - حصة العامل", level: 4, type: "liability" },
-  { code: "203006003", name: "الهيئة القومية للتأمينات الاجتماعية", level: 4, type: "liability" },
-  { code: "203007", name: "مجمع الإهلاك", level: 3, type: "liability" },
-  { code: "203007001", name: "مجمع إهلاك - الأصول الثابتة 1", level: 4, type: "liability" },
-  { code: "203007002", name: "مجمع إهلاك - الأصول الثابتة 2", level: 4, type: "liability" },
+  // LIABILITIES & EQUITY
+  { code: "2", name: "Liabilities & Equity", level: 1, type: "liability" },
+  { code: "201", name: "Capital Accounts", level: 2, type: "equity" },
+  { code: "201001", name: "Paid-in Capital", level: 4, type: "equity" },
+  { code: "201003", name: "Retained Earnings (P&L)", level: 4, type: "equity" },
+  { code: "202", name: "Non-Current Liabilities", level: 2, type: "liability" },
+  { code: "202001", name: "Long-term Loans", level: 4, type: "liability" },
+  { code: "203", name: "Current Liabilities", level: 2, type: "liability" },
+  { code: "203001001", name: "Supplier - 1", level: 4, type: "liability" },
+  { code: "203004", name: "Taxes Payable", level: 4, type: "liability" },
+  { code: "203007", name: "Accumulated Depreciation", level: 4, type: "liability" },
 
-  // المصروفات
-  { code: "3", name: "المصروفات", level: 1, type: "expense" },
-  { code: "301", name: "مصروفات العمليات والتشغيل", level: 2, type: "expense" },
-  { code: "301001", name: "مصروفات التشغيل", level: 3, type: "expense" },
-  { code: "301001001", name: "تكلفة مبيعات - تمور خام", level: 4, type: "expense" },
-  { code: "301001002", name: "تكلفة البضاعة - جاهزة للبيع", level: 4, type: "expense" },
-  { code: "301001003", name: "تحميل وتنزيل", level: 4, type: "expense" },
-  { code: "301001004", name: "تبخير التمور", level: 4, type: "expense" },
-  { code: "301001005", name: "نقل ونولون", level: 4, type: "expense" },
-  { code: "301001006", name: "إعاشة عمال", level: 4, type: "expense" },
-  { code: "301001007", name: "أجور ومرتبات - تشغيل", level: 4, type: "expense" },
-  { code: "301001008", name: "تأمينات اجتماعية - تشغيل", level: 4, type: "expense" },
-  { code: "302", name: "مصروفات الإدارة العامة", level: 2, type: "expense" },
-  { code: "302001", name: "مصروفات عمومية وإدارية وتسويقية", level: 3, type: "expense" },
-  { code: "302001001", name: "أجور ومرتبات - إدارة", level: 4, type: "expense" },
-  { code: "302001002", name: "إيجار المقر", level: 4, type: "expense" },
-  { code: "302001003", name: "اتصالات وإنترنت", level: 4, type: "expense" },
-  { code: "302001004", name: "أدوات مكتبية وتصوير وأحبار", level: 4, type: "expense" },
-  { code: "302001005", name: "مصاريف كمبيوتر وبرامج", level: 4, type: "expense" },
-  { code: "302001006", name: "بوفيه وضيافة", level: 4, type: "expense" },
-  { code: "302001007", name: "مصاريف سيارات", level: 4, type: "expense" },
-  { code: "302001008", name: "كهرباء", level: 4, type: "expense" },
-  { code: "302001009", name: "مستلزمات طبية", level: 4, type: "expense" },
-  { code: "302001010", name: "أتعاب محاماه", level: 4, type: "expense" },
-  { code: "302001011", name: "مصروفات وعمولات بنكية", level: 4, type: "expense" },
-  { code: "302001013", name: "تأمينات اجتماعية - إدارة", level: 4, type: "expense" },
-  { code: "302001014", name: "مراقبو حسابات", level: 4, type: "expense" },
-  { code: "302001015", name: "انتقالات", level: 4, type: "expense" },
-  { code: "302001016", name: "إكراميات", level: 4, type: "expense" },
-  { code: "302001017", name: "مصاريف إدارية متنوعة", level: 4, type: "expense" },
-  { code: "302001018", name: "دعاية وإعلان", level: 4, type: "expense" },
-  { code: "302001019", name: "مصروف إهلاك الأصول الثابتة", level: 4, type: "expense" },
-  { code: "302001020", name: "رسوم ودمغات وغرامات", level: 4, type: "expense" },
-  { code: "302001021", name: "رسوم طريق", level: 4, type: "expense" },
-  { code: "302001022", name: "مصروفات بريدية", level: 4, type: "expense" },
-  { code: "302001024", name: "استشارات وخدمات تأمينية", level: 4, type: "expense" },
-  { code: "302001025", name: "حوافز ومكافآت", level: 4, type: "expense" },
-  { code: "302001026", name: "مصروفات سفر", level: 4, type: "expense" },
-  { code: "302001027", name: "مصاريف صيانة ونظافة", level: 4, type: "expense" },
-  { code: "302001028", name: "مساهمة تكافلية - تأمين صحي", level: 4, type: "expense" },
+  // EXPENSES
+  { code: "3", name: "Expenses", level: 1, type: "expense" },
+  { code: "301", name: "Operating Expenses (COGS)", level: 2, type: "expense" },
+  { code: "301001", name: "Cost of Goods Sold - Raw", level: 4, type: "expense" },
+  { code: "301007", name: "Salaries - Operations", level: 4, type: "expense" },
+  { code: "302", name: "General & Administrative", level: 2, type: "expense" },
+  { code: "302001", name: "Office Rent", level: 4, type: "expense" },
+  { code: "302003", name: "Internet & Telecom", level: 4, type: "expense" },
+  { code: "302008", name: "Electricity", level: 4, type: "expense" },
+  { code: "302019", name: "Depreciation Expense", level: 4, type: "expense" },
 
-  // الإيرادات
-  { code: "4", name: "الإيرادات", level: 1, type: "revenue" },
-  { code: "401", name: "إيرادات مباشرة", level: 2, type: "revenue" },
-  { code: "401001", name: "إيرادات المشاريع", level: 3, type: "revenue" },
-  { code: "401001001", name: "إيرادات - مبيعات تمور خام", level: 4, type: "revenue" },
-  { code: "401001002", name: "إيرادات - مبيعات تمور جاهزة للبيع", level: 4, type: "revenue" },
-  { code: "402", name: "الإيرادات غير المباشرة", level: 2, type: "revenue" },
-  { code: "402001", name: "إيرادات غير مباشرة", level: 3, type: "revenue" },
-  { code: "402001001", name: "فوائد بنكية", level: 4, type: "revenue" },
-  { code: "402001002", name: "خصم مكتسب", level: 4, type: "revenue" },
-  { code: "402001003", name: "أرباح وخسائر تقييم عملة", level: 4, type: "revenue" },
-  { code: "402001004", name: "فوائد مكتسبة", level: 4, type: "revenue" },
-];
+  // REVENUE
+  { code: "4", name: "Revenue", level: 1, type: "revenue" },
+  { code: "401", name: "Direct Sales", level: 4, type: "revenue" },
+  { code: "402", name: "Other Income (Interest/FX)", level: 4, type: "revenue" }
+]; // End of Array
 
-// Helper: get only level-4 accounts for entry dropdowns
+// 2. FUNCTIONS: Logic (outside the array)
+
+function resetFilters() {
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  document.getElementById('typeFilter').value = 'all';
+  renderTrialBalance();
+}
+
 function getLeafAccounts() {
   return ACCOUNTS.filter(a => a.level === 4);
 }
 
-// Helper: get account by code
 function getAccount(code) {
   return ACCOUNTS.find(a => a.code === code);
 }
 
-// Helper: load entries from localStorage
 function loadEntries() {
-  return JSON.parse(localStorage.getItem("journal_entries") || "[]");
+  const data = localStorage.getItem("journal_entries");
+  return data ? JSON.parse(data) : [];
 }
 
-// Helper: save entries
 function saveEntries(entries) {
   localStorage.setItem("journal_entries", JSON.stringify(entries));
 }
 
-// Helper: format number
 function fmt(n) {
-  return Number(n || 0).toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return Number(n || 0).toLocaleString("en-US", { 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2 
+  });
 }

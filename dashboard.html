@@ -1,63 +1,59 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>الداشبورد - النظام المحاسبي</title>
+  <title>Dashboard - Accounting System</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
 <nav class="navbar">
-  <div class="logo">⚖️ <span>النظام</span> المحاسبي</div>
+  <div class="logo">⚖️ <span>Accounting</span> System</div>
   <ul class="nav-links">
-    <li><a href="index.html">📝 <span>القيود</span></a></li>
-    <li><a href="trial-balance.html">📊 <span>ميزان المراجعة</span></a></li>
-    <li><a href="income-statement.html">📈 <span>قائمة الدخل</span></a></li>
-    <li><a href="balance-sheet.html">🏦 <span>الميزانية</span></a></li>
-    <li><a href="dashboard.html" class="active">🖥️ <span>الداشبورد</span></a></li>
+    <li><a href="index.html">📝 <span>Entries</span></a></li>
+    <li><a href="trial-balance.html">📊 <span>Trial Balance</span></a></li>
+    <li><a href="income-statement.html">📈 <span>Income Statement</span></a></li>
+    <li><a href="balance-sheet.html">🏦 <span>Balance Sheet</span></a></li>
+    <li><a href="dashboard.html" class="active">🖥️ <span>Dashboard</span></a></li>
   </ul>
 </nav>
 
 <div class="page">
   <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
     <div>
-      <h1>🖥️ لوحة التحكم</h1>
-      <p id="dateLabel">ملخص شامل للوضع المالي</p>
+      <h1>🖥️ Financial Dashboard</h1>
+      <p id="dateLabel">Comprehensive financial overview</p>
     </div>
-    <button class="btn btn-primary" onclick="render()">🔄 تحديث</button>
+    <button class="btn btn-primary" onclick="render()">🔄 Refresh Data</button>
   </div>
 
-  <!-- KPI Cards -->
   <div class="stats-grid" id="kpiRow" style="margin-bottom:1.5rem"></div>
 
-  <!-- Charts Row -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
     <div class="card">
-      <div class="card-title">📊 توزيع الأصول</div>
+      <div class="card-title">📊 Asset Allocation</div>
       <canvas id="assetsChart" height="220"></canvas>
     </div>
     <div class="card">
-      <div class="card-title">📈 الإيرادات مقابل المصروفات</div>
+      <div class="card-title">📈 Revenue vs Expenses</div>
       <canvas id="revExpChart" height="220"></canvas>
     </div>
   </div>
 
-  <!-- Monthly Trend -->
   <div class="card" style="margin-bottom:1.5rem">
-    <div class="card-title">📅 الاتجاه الشهري للقيود</div>
+    <div class="card-title">📅 Monthly Entry Trends</div>
     <canvas id="monthlyChart" height="120"></canvas>
   </div>
 
-  <!-- Recent Entries + Account Distribution -->
   <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:1.5rem">
     <div class="card">
-      <div class="card-title">🕐 آخر القيود المدخلة</div>
+      <div class="card-title">🕐 Recent Journal Entries</div>
       <div id="recentEntries"></div>
     </div>
     <div class="card">
-      <div class="card-title">🏆 أعلى الحسابات نشاطاً</div>
+      <div class="card-title">🏆 Most Active Accounts</div>
       <div id="topAccounts"></div>
     </div>
   </div>
@@ -66,26 +62,25 @@
 <script src="accounts.js"></script>
 <script>
   Chart.defaults.color = '#8b92a8';
-  Chart.defaults.font.family = 'Tajawal, sans-serif';
+  Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
 
   let assetsChart, revExpChart, monthlyChart;
 
   window.onload = () => {
     const now = new Date();
-    document.getElementById('dateLabel').textContent = `آخر تحديث: ${now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+    document.getElementById('dateLabel').textContent = `Last update: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
     render();
   };
 
   function render() {
     const entries = loadEntries();
 
-    // Aggregate
     const map = {};
     entries.forEach(entry => {
       entry.lines.forEach(line => {
         if (!map[line.code]) map[line.code] = { code: line.code, name: line.name, type: line.type, debit: 0, credit: 0, count: 0 };
-        map[line.code].debit += line.debit;
-        map[line.code].credit += line.credit;
+        map[line.code].debit += parseFloat(line.debit) || 0;
+        map[line.code].credit += parseFloat(line.credit) || 0;
         map[line.code].count++;
       });
     });
@@ -100,98 +95,102 @@
     const totalExp = rows.filter(r => r.type === 'expense').reduce((s, r) => s + getBalance(r), 0);
     const netProfit = totalRev - totalExp;
 
-    // KPIs
     document.getElementById('kpiRow').innerHTML = `
-      <div class="stat-card blue"><div class="stat-label">إجمالي الأصول</div><div class="stat-value blue">${fmt(totalAssets)}</div></div>
-      <div class="stat-card red"><div class="stat-label">إجمالي الالتزامات</div><div class="stat-value red">${fmt(totalLiab)}</div></div>
-      <div class="stat-card gold"><div class="stat-label">حقوق الملكية</div><div class="stat-value gold">${fmt(totalEquity)}</div></div>
-      <div class="stat-card green"><div class="stat-label">إجمالي الإيرادات</div><div class="stat-value green">${fmt(totalRev)}</div></div>
-      <div class="stat-card red"><div class="stat-label">إجمالي المصروفات</div><div class="stat-value red">${fmt(totalExp)}</div></div>
-      <div class="stat-card ${netProfit >= 0 ? 'green' : 'red'}"><div class="stat-label">صافي ${netProfit >= 0 ? 'الربح' : 'الخسارة'}</div><div class="stat-value ${netProfit >= 0 ? 'green' : 'red'}">${fmt(Math.abs(netProfit))}</div></div>
+      <div class="stat-card blue"><div class="stat-label">Total Assets</div><div class="stat-value blue">${fmt(totalAssets)}</div></div>
+      <div class="stat-card red"><div class="stat-label">Total Liabilities</div><div class="stat-value red">${fmt(totalLiab)}</div></div>
+      <div class="stat-card gold"><div class="stat-label">Total Equity</div><div class="stat-value gold">${fmt(totalEquity)}</div></div>
+      <div class="stat-card green"><div class="stat-label">Revenue</div><div class="stat-value green">${fmt(totalRev)}</div></div>
+      <div class="stat-card red"><div class="stat-label">Expenses</div><div class="stat-value red">${fmt(totalExp)}</div></div>
+      <div class="stat-card ${netProfit >= 0 ? 'green' : 'red'}">
+        <div class="stat-label">Net ${netProfit >= 0 ? 'Profit' : 'Loss'}</div>
+        <div class="stat-value">${fmt(Math.abs(netProfit))}</div>
+      </div>
     `;
 
-    // Assets Doughnut
     const fixedA = rows.filter(r => r.type === 'asset' && r.code.startsWith('101')).reduce((s, r) => s + getBalance(r), 0);
     const cashA = rows.filter(r => r.type === 'asset' && r.code.startsWith('102')).reduce((s, r) => s + getBalance(r), 0);
-    const recA = rows.filter(r => r.type === 'asset' && r.code.startsWith('103')).reduce((s, r) => s + getBalance(r), 0);
-    const invA = rows.filter(r => r.type === 'asset' && r.code.startsWith('105')).reduce((s, r) => s + getBalance(r), 0);
-    const otherA = totalAssets - fixedA - cashA - recA - invA;
+    const otherA = Math.max(0, totalAssets - fixedA - cashA);
 
     if (assetsChart) assetsChart.destroy();
     assetsChart = new Chart(document.getElementById('assetsChart'), {
       type: 'doughnut',
       data: {
-        labels: ['أصول ثابتة', 'نقدية وبنوك', 'عملاء', 'مخزون', 'أخرى'],
-        datasets: [{ data: [fixedA, cashA, recA, invA, Math.max(0, otherA)], backgroundColor: ['#60a5fa','#c9a96e','#4ade80','#f87171','#a78bfa'], borderWidth: 0 }]
+        labels: ['Fixed Assets', 'Cash & Bank', 'Others'],
+        datasets: [{ 
+          data: [fixedA, cashA, otherA], 
+          backgroundColor: ['#60a5fa','#c9a96e','#a78bfa'], 
+          borderWidth: 0 
+        }]
       },
-      options: { plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } } }, cutout: '65%' }
+      options: { 
+        plugins: { legend: { position: 'bottom' } }, 
+        cutout: '70%' 
+      }
     });
 
-    // Rev vs Exp Bar
     if (revExpChart) revExpChart.destroy();
     revExpChart = new Chart(document.getElementById('revExpChart'), {
       type: 'bar',
       data: {
-        labels: ['الإيرادات', 'المصروفات', 'صافي الربح'],
+        labels: ['Revenue', 'Expenses', 'Net Profit'],
         datasets: [{
-          data: [totalRev, totalExp, Math.abs(netProfit)],
-          backgroundColor: ['rgba(74,222,128,0.7)', 'rgba(248,113,113,0.7)', netProfit >= 0 ? 'rgba(201,169,110,0.7)' : 'rgba(248,113,113,0.5)'],
-          borderRadius: 8, borderSkipped: false
+          data: [totalRev, totalExp, Math.max(0, netProfit)],
+          backgroundColor: ['#4ade80', '#f87171', '#c9a96e'],
+          borderRadius: 6
         }]
       },
-      options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(42,48,69,0.6)' } }, x: { grid: { display: false } } } }
+      options: { 
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
     });
 
-    // Monthly Trend
     const monthMap = {};
     entries.forEach(e => {
       const m = e.date.substring(0, 7);
-      if (!monthMap[m]) monthMap[m] = { debit: 0, credit: 0, count: 0 };
-      e.lines.forEach(l => { monthMap[m].debit += l.debit; monthMap[m].credit += l.credit; });
-      monthMap[m].count++;
+      if (!monthMap[m]) monthMap[m] = { debit: 0, credit: 0 };
+      e.lines.forEach(l => { 
+        monthMap[m].debit += parseFloat(l.debit) || 0; 
+        monthMap[m].credit += parseFloat(l.credit) || 0; 
+      });
     });
     const months = Object.keys(monthMap).sort();
+
     if (monthlyChart) monthlyChart.destroy();
     monthlyChart = new Chart(document.getElementById('monthlyChart'), {
       type: 'line',
       data: {
-        labels: months.map(m => { const d = new Date(m + '-01'); return d.toLocaleDateString('ar-EG', { month: 'short', year: 'numeric' }); }),
+        labels: months,
         datasets: [
-          { label: 'مدين', data: months.map(m => monthMap[m].debit), borderColor: '#4ade80', backgroundColor: 'rgba(74,222,128,0.08)', tension: 0.4, fill: true },
-          { label: 'دائن', data: months.map(m => monthMap[m].credit), borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.08)', tension: 0.4, fill: true }
+          { label: 'Debit Volume', data: months.map(m => monthMap[m].debit), borderColor: '#4ade80', tension: 0.3, fill: false },
+          { label: 'Credit Volume', data: months.map(m => monthMap[m].credit), borderColor: '#f87171', tension: 0.3, fill: false }
         ]
-      },
-      options: { plugins: { legend: { position: 'top' } }, scales: { y: { grid: { color: 'rgba(42,48,69,0.6)' } }, x: { grid: { display: false } } } }
+      }
     });
 
-    // Recent entries
     const recent = [...entries].reverse().slice(0, 5);
-    document.getElementById('recentEntries').innerHTML = recent.length === 0
-      ? `<div class="empty-state"><div class="icon">📋</div><h3>لا توجد قيود</h3></div>`
-      : recent.map(e => {
-        const tot = e.lines.reduce((s, l) => s + l.debit, 0);
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0;border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-weight:600;font-size:0.9rem">${e.desc}</div>
-            <div style="color:var(--text2);font-size:0.78rem">${e.id} · ${e.date}</div>
-          </div>
-          <span class="badge badge-green">EGP ${fmt(tot)}</span>
-        </div>`;
-      }).join('');
+    document.getElementById('recentEntries').innerHTML = recent.map(e => `
+      <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #eee">
+        <div><strong>${e.desc}</strong><br><small>${e.date}</small></div>
+        <span class="badge badge-green">${fmt(e.lines.reduce((s, l) => s + (parseFloat(l.debit) || 0), 0))}</span>
+      </div>
+    `).join('');
 
-    // Top accounts
-    const top = Object.values(map).sort((a, b) => b.count - a.count).slice(0, 6);
-    document.getElementById('topAccounts').innerHTML = top.length === 0
-      ? `<div class="empty-state"><div class="icon">🏆</div><h3>لا توجد بيانات</h3></div>`
-      : top.map((r, i) => `
-        <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--accent);font-weight:700;font-size:0.85rem;min-width:20px">${i + 1}</span>
-          <div style="flex:1">
-            <div style="font-size:0.85rem;font-weight:500">${r.name}</div>
-            <div style="color:var(--text2);font-size:0.75rem">${r.code}</div>
-          </div>
-          <span class="badge badge-blue">${r.count} مرة</span>
-        </div>`).join('');
+    const top = Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
+    document.getElementById('topAccounts').innerHTML = top.map(r => `
+      <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #eee">
+        <span>${r.name}</span>
+        <span class="badge badge-blue">${r.count} Entries</span>
+      </div>
+    `).join('');
+  }
+
+  function fmt(num) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function loadEntries() {
+    return JSON.parse(localStorage.getItem('journal_entries') || '[]');
   }
 </script>
 </body>
