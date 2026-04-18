@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>شاشة القيود - النظام المحاسبي</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .line-item { grid-template-columns: 2.5fr 1fr 1fr auto; }
+    .side-debit  { color: var(--green) !important; font-weight: 700; }
+    .side-credit { color: var(--red)   !important; font-weight: 700; }
+  </style>
 </head>
 <body>
 
@@ -22,7 +27,7 @@
 <div class="page">
   <div class="page-header">
     <h1>📝 شاشة إدخال القيود اليومية</h1>
-    <p>أدخل القيود المحاسبية — يجب أن يتساوى إجمالي المدين مع إجمالي الدائن</p>
+    <p>كل سطر = حساب واحد + نوعه (مدين أو دائن) — لازم يتوازن القيد</p>
   </div>
 
   <!-- Entry Form -->
@@ -44,8 +49,15 @@
       </div>
     </div>
 
-    <!-- Line Items -->
+    <!-- Column Headers -->
     <div class="section-label">📋 بنود القيد</div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr auto;gap:0.75rem;padding:0 0.75rem;margin-bottom:0.4rem">
+      <span style="font-size:0.78rem;color:var(--text2);font-weight:700">الحساب</span>
+      <span style="font-size:0.78rem;color:var(--text2);font-weight:700">النوع</span>
+      <span style="font-size:0.78rem;color:var(--text2);font-weight:700">المبلغ (EGP)</span>
+      <span></span>
+    </div>
+
     <div id="lineItems"></div>
 
     <button class="btn btn-ghost" onclick="addLine()" style="margin-top:0.5rem; margin-bottom:1.2rem">
@@ -54,15 +66,15 @@
 
     <!-- Totals -->
     <div style="display:flex; gap:1rem; justify-content:flex-end; flex-wrap:wrap; margin-bottom:1rem">
-      <div class="stat-card gold" style="min-width:160px; padding:0.9rem 1.2rem">
+      <div class="stat-card green" style="min-width:160px; padding:0.9rem 1.2rem">
         <div class="stat-label">إجمالي المدين</div>
-        <div class="stat-value gold" id="totalDebit">0.00</div>
+        <div class="stat-value green" id="totalDebit">0.00</div>
       </div>
-      <div class="stat-card blue" style="min-width:160px; padding:0.9rem 1.2rem">
+      <div class="stat-card red" style="min-width:160px; padding:0.9rem 1.2rem">
         <div class="stat-label">إجمالي الدائن</div>
-        <div class="stat-value blue" id="totalCredit">0.00</div>
+        <div class="stat-value red" id="totalCredit">0.00</div>
       </div>
-      <div class="stat-card" id="balanceCard" style="min-width:160px; padding:0.9rem 1.2rem">
+      <div class="stat-card" id="balanceCard" style="min-width:160px; padding:0.9rem 1.2rem; border:2px solid var(--border)">
         <div class="stat-label">الفرق</div>
         <div class="stat-value" id="balanceDiff">0.00</div>
       </div>
@@ -92,13 +104,13 @@
 
 <script src="accounts.js"></script>
 <script>
-  // ===== INIT =====
   let lineCount = 0;
 
   window.onload = () => {
     document.getElementById('entryDate').valueAsDate = new Date();
     updateEntryNumber();
-    addLine(); addLine(); // start with 2 lines
+    addLine('debit');   // سطر مدين افتراضي
+    addLine('credit');  // سطر دائن افتراضي
     renderEntries();
   };
 
@@ -108,7 +120,8 @@
   }
 
   // ===== LINE ITEMS =====
-  function addLine() {
+  // كل سطر = حساب واحد + نوع (مدين أو دائن بس) + مبلغ
+  function addLine(defaultSide = '') {
     lineCount++;
     const id = `line_${lineCount}`;
     const accounts = getLeafAccounts();
@@ -117,24 +130,37 @@
     div.className = 'line-item';
     div.id = id;
     div.innerHTML = `
-      <div class="form-group">
-        <label>الحساب</label>
-        <select onchange="calcTotals()">
+      <div class="form-group" style="margin:0">
+        <select onchange="calcTotals()" style="width:100%">
           <option value="">-- اختر الحساب --</option>
           ${accounts.map(a => `<option value="${a.code}" data-type="${a.type}">${a.code} | ${a.name}</option>`).join('')}
         </select>
       </div>
-      <div class="form-group">
-        <label>مدين (EGP)</label>
-        <input type="number" min="0" step="0.01" placeholder="0.00" oninput="calcTotals()" class="debit-input" />
+      <div class="form-group" style="margin:0">
+        <select class="side-select" onchange="updateSideColor(this); calcTotals()" style="width:100%;font-weight:700">
+          <option value="">-- --</option>
+          <option value="debit"  ${defaultSide === 'debit'  ? 'selected' : ''}>مدين ↑</option>
+          <option value="credit" ${defaultSide === 'credit' ? 'selected' : ''}>دائن ↓</option>
+        </select>
       </div>
-      <div class="form-group">
-        <label>دائن (EGP)</label>
-        <input type="number" min="0" step="0.01" placeholder="0.00" oninput="calcTotals()" class="credit-input" />
+      <div class="form-group" style="margin:0">
+        <input type="number" min="0" step="0.01" placeholder="0.00"
+          oninput="calcTotals()" class="amount-input" style="width:100%" />
       </div>
-      <button class="btn btn-danger" onclick="removeLine('${id}')" style="padding:0.5rem 0.75rem;margin-bottom:0.4rem">✕</button>
+      <button class="btn btn-danger" onclick="removeLine('${id}')"
+        style="padding:0.5rem 0.75rem;align-self:center">✕</button>
     `;
     document.getElementById('lineItems').appendChild(div);
+
+    if (defaultSide) {
+      updateSideColor(div.querySelector('.side-select'));
+    }
+  }
+
+  function updateSideColor(sel) {
+    sel.classList.remove('side-debit', 'side-credit');
+    if (sel.value === 'debit')  sel.classList.add('side-debit');
+    if (sel.value === 'credit') sel.classList.add('side-credit');
   }
 
   function removeLine(id) {
@@ -144,30 +170,34 @@
 
   function calcTotals() {
     let debit = 0, credit = 0;
-    document.querySelectorAll('.debit-input').forEach(i => debit += parseFloat(i.value) || 0);
-    document.querySelectorAll('.credit-input').forEach(i => credit += parseFloat(i.value) || 0);
+    document.querySelectorAll('.line-item').forEach(row => {
+      const side   = row.querySelector('.side-select').value;
+      const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
+      if (side === 'debit')  debit  += amount;
+      if (side === 'credit') credit += amount;
+    });
 
-    document.getElementById('totalDebit').textContent = fmt(debit);
+    document.getElementById('totalDebit').textContent  = fmt(debit);
     document.getElementById('totalCredit').textContent = fmt(credit);
 
     const diff = Math.abs(debit - credit);
     const diffEl = document.getElementById('balanceDiff');
-    const card = document.getElementById('balanceCard');
+    const card   = document.getElementById('balanceCard');
     diffEl.textContent = fmt(diff);
 
-    if (diff < 0.01) {
-      diffEl.style.color = 'var(--green)';
+    if (diff < 0.01 && debit > 0) {
+      diffEl.style.color     = 'var(--green)';
       card.style.borderColor = 'var(--green)';
     } else {
-      diffEl.style.color = 'var(--red)';
+      diffEl.style.color     = 'var(--red)';
       card.style.borderColor = 'var(--red)';
     }
   }
 
   // ===== SAVE ENTRY =====
   function saveEntry() {
-    const date = document.getElementById('entryDate').value;
-    const desc = document.getElementById('entryDesc').value.trim();
+    const date    = document.getElementById('entryDate').value;
+    const desc    = document.getElementById('entryDesc').value.trim();
     const alertEl = document.getElementById('formAlert');
 
     if (!date) return showAlert(alertEl, 'error', '⚠️ الرجاء تحديد تاريخ القيد');
@@ -175,27 +205,38 @@
 
     const lines = [];
     document.querySelectorAll('.line-item').forEach(row => {
-      const sel = row.querySelector('select');
-      const debit = parseFloat(row.querySelector('.debit-input').value) || 0;
-      const credit = parseFloat(row.querySelector('.credit-input').value) || 0;
-      if (sel.value && (debit > 0 || credit > 0)) {
-        const acc = getAccount(sel.value);
-        lines.push({ code: sel.value, name: acc?.name || '', type: acc?.type || '', debit, credit });
+      const code   = row.querySelector('select').value;
+      const side   = row.querySelector('.side-select').value;
+      const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
+
+      if (code && side && amount > 0) {
+        const acc = getAccount(code);
+        lines.push({
+          code,
+          name:   acc?.name || '',
+          type:   acc?.type || '',
+          debit:  side === 'debit'  ? amount : 0,
+          credit: side === 'credit' ? amount : 0,
+        });
       }
     });
 
-    if (lines.length < 2) return showAlert(alertEl, 'error', '⚠️ يجب إضافة سطرين على الأقل');
+    if (lines.length < 2)
+      return showAlert(alertEl, 'error', '⚠️ يجب إضافة سطرين على الأقل (مدين ودائن)');
 
-    const totalD = lines.reduce((s, l) => s + l.debit, 0);
+    const totalD = lines.reduce((s, l) => s + l.debit,  0);
     const totalC = lines.reduce((s, l) => s + l.credit, 0);
-    if (Math.abs(totalD - totalC) > 0.01) return showAlert(alertEl, 'error', '⚠️ القيد غير متوازن — المدين لا يساوي الدائن');
+
+    if (totalD === 0 || totalC === 0)
+      return showAlert(alertEl, 'error', '⚠️ القيد يجب أن يحتوي على مدين ودائن في آنٍ واحد');
+
+    if (Math.abs(totalD - totalC) > 0.01)
+      return showAlert(alertEl, 'error', `⚠️ القيد غير متوازن — مدين: ${fmt(totalD)} / دائن: ${fmt(totalC)}`);
 
     const entries = loadEntries();
     const entry = {
       id: `QID-${String(entries.length + 1).padStart(4, '0')}`,
-      date,
-      desc,
-      lines,
+      date, desc, lines,
       createdAt: new Date().toISOString()
     };
     entries.push(entry);
@@ -211,7 +252,8 @@
     document.getElementById('entryDesc').value = '';
     document.getElementById('lineItems').innerHTML = '';
     lineCount = 0;
-    addLine(); addLine();
+    addLine('debit');
+    addLine('credit');
     calcTotals();
     document.getElementById('formAlert').innerHTML = '';
     updateEntryNumber();
@@ -219,8 +261,8 @@
 
   // ===== RENDER ENTRIES =====
   function renderEntries() {
-    const entries = loadEntries();
-    const search = document.getElementById('searchBox').value.toLowerCase();
+    const entries   = loadEntries();
+    const search    = document.getElementById('searchBox').value.toLowerCase();
     const container = document.getElementById('entriesContainer');
 
     const filtered = entries.filter(e =>
@@ -234,10 +276,7 @@
       return;
     }
 
-    // Show latest first
-    const sorted = [...filtered].reverse();
-
-    container.innerHTML = sorted.map(e => {
+    container.innerHTML = [...filtered].reverse().map(e => {
       const totalD = e.lines.reduce((s, l) => s + l.debit, 0);
       return `
         <div style="border:1px solid var(--border);border-radius:10px;margin-bottom:0.75rem;overflow:hidden">
@@ -255,7 +294,9 @@
           <div class="table-wrap" style="border:none;border-radius:0">
             <table>
               <thead><tr>
-                <th>كود الحساب</th><th>اسم الحساب</th><th>النوع</th><th>مدين</th><th>دائن</th>
+                <th>كود الحساب</th><th>اسم الحساب</th><th>النوع</th>
+                <th style="color:var(--green)">مدين ↑</th>
+                <th style="color:var(--red)">دائن ↓</th>
               </tr></thead>
               <tbody>
                 ${e.lines.map(l => `
@@ -263,14 +304,14 @@
                     <td><code style="color:var(--accent);font-size:0.82rem">${l.code}</code></td>
                     <td>${l.name}</td>
                     <td>${typeLabel(l.type)}</td>
-                    <td style="color:var(--green);font-weight:600">${l.debit > 0 ? fmt(l.debit) : '—'}</td>
+                    <td style="color:var(--green);font-weight:600">${l.debit  > 0 ? fmt(l.debit)  : '—'}</td>
                     <td style="color:var(--red);font-weight:600">${l.credit > 0 ? fmt(l.credit) : '—'}</td>
                   </tr>`).join('')}
               </tbody>
               <tr class="tfoot-row">
                 <td colspan="3">الإجمالي</td>
-                <td>${fmt(e.lines.reduce((s,l)=>s+l.debit,0))}</td>
-                <td>${fmt(e.lines.reduce((s,l)=>s+l.credit,0))}</td>
+                <td>${fmt(e.lines.reduce((s,l) => s + l.debit,  0))}</td>
+                <td>${fmt(e.lines.reduce((s,l) => s + l.credit, 0))}</td>
               </tr>
             </table>
           </div>
@@ -279,26 +320,31 @@
   }
 
   function typeLabel(type) {
-    const map = { asset: '<span class="badge badge-blue">أصول</span>', liability: '<span class="badge badge-red">التزامات</span>', equity: '<span class="badge badge-gold">حقوق ملكية</span>', expense: '<span class="badge badge-red">مصروفات</span>', revenue: '<span class="badge badge-green">إيرادات</span>' };
+    const map = {
+      asset:     '<span class="badge badge-blue">أصول</span>',
+      liability: '<span class="badge badge-red">التزامات</span>',
+      equity:    '<span class="badge badge-gold">حقوق ملكية</span>',
+      expense:   '<span class="badge badge-red">مصروفات</span>',
+      revenue:   '<span class="badge badge-green">إيرادات</span>'
+    };
     return map[type] || type;
   }
 
   function deleteEntry(id) {
     if (!confirm(`هل تريد حذف القيد ${id}؟`)) return;
-    const entries = loadEntries().filter(e => e.id !== id);
-    saveEntries(entries);
+    saveEntries(loadEntries().filter(e => e.id !== id));
     renderEntries();
   }
 
   function confirmClearAll() {
-    if (!confirm('⚠️ هل تريد حذف جميع القيود؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+    if (!confirm('⚠️ هل تريد حذف جميع القيود؟ لا يمكن التراجع.')) return;
     saveEntries([]);
     renderEntries();
     updateEntryNumber();
   }
 
   function showAlert(el, type, msg) {
-    el.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'error'}">${msg}</div>`;
+    el.innerHTML = `<div class="alert alert-${type === 'success' ? 'success' : 'error'}" style="margin-bottom:0.75rem">${msg}</div>`;
     if (type === 'success') setTimeout(() => el.innerHTML = '', 3000);
   }
 </script>
