@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@300;400;600;700&display=swap');
 
 :root {
-  --bg: #0f1117;
-  --surface: #181c27;
-  --surface2: #1e2333;
-  --border: #2a3045;
-  --accent: #c9a96e;
-  --accent2: #e8c98a;
-  --green: #4ade80;
-  --red: #f87171;
-  --blue: #60a5fa;
-  --text: #e8eaf0;
-  --text2: #8b92a8;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface2: #f0f2f8;
+  --border: #dde1ee;
+  --accent: #7c5cbb;
+  --accent2: #9b7dd4;
+  --green: #16a34a;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --text: #1a1d2e;
+  --text2: #6b7280;
   --radius: 12px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
