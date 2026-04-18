@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الميزانية العمومية - النظام المحاسبي</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">⚖️ <span>النظام</span> المحاسبي</div>
+  <ul class="nav-links">
+    <li><a href="index.html">📝 <span>القيود</span></a></li>
+    <li><a href="trial-balance.html">📊 <span>ميزان المراجعة</span></a></li>
+    <li><a href="income-statement.html">📈 <span>قائمة الدخل</span></a></li>
+    <li><a href="balance-sheet.html" class="active">🏦 <span>الميزانية</span></a></li>
+    <li><a href="dashboard.html">🖥️ <span>الداشبورد</span></a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>🏦 الميزانية العمومية</h1>
+    <p>الأصول = الالتزامات + حقوق الملكية</p>
+  </div>
+
+  <!-- Filter -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>📅 حتى تاريخ</label>
+        <input type="date" id="asOfDate" onchange="render()" />
+      </div>
+      <div class="form-group" style="justify-content:flex-end;flex-direction:row;align-items:flex-end;gap:0.5rem">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Check -->
+  <div id="balanceCheck" style="margin-bottom:1.5rem"></div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="statsRow" style="margin-bottom:1.5rem"></div>
+
+  <!-- Two Columns -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+
+    <!-- ASSETS -->
+    <div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title" style="color:var(--blue)">🏢 الأصول</div>
+
+        <div class="section-label">الأصول الثابتة</div>
+        <div class="table-wrap" style="margin-bottom:1rem">
+          <table>
+            <thead><tr><th>الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+            <tbody id="fixedAssets"></tbody>
+            <tfoot id="fixedAssetsFoot"></tfoot>
+          </table>
+        </div>
+
+        <div class="section-label">الأصول المتداولة</div>
+        <div class="table-wrap" style="margin-bottom:1rem">
+          <table>
+            <thead><tr><th>الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+            <tbody id="currentAssets"></tbody>
+            <tfoot id="currentAssetsFoot"></tfoot>
+          </table>
+        </div>
+
+        <div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:8px;padding:0.85rem 1rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:1rem">إجمالي الأصول</span>
+          <span style="font-weight:800;font-size:1.2rem;color:var(--blue)" id="totalAssets">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIABILITIES & EQUITY -->
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title" style="color:var(--red)">📋 الالتزامات</div>
+
+        <div class="section-label">الالتزامات غير المتداولة</div>
+        <div class="table-wrap" style="margin-bottom:1rem">
+          <table>
+            <thead><tr><th>الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+            <tbody id="nonCurrLiab"></tbody>
+            <tfoot id="nonCurrLiabFoot"></tfoot>
+          </table>
+        </div>
+
+        <div class="section-label">الالتزامات المتداولة</div>
+        <div class="table-wrap" style="margin-bottom:1rem">
+          <table>
+            <thead><tr><th>الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+            <tbody id="currLiab"></tbody>
+            <tfoot id="currLiabFoot"></tfoot>
+          </table>
+        </div>
+
+        <div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <span style="font-weight:600">إجمالي الالتزامات</span>
+          <span style="font-weight:700;color:var(--red)" id="totalLiab">0.00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color:var(--accent)">💰 حقوق الملكية</div>
+        <div class="table-wrap" style="margin-bottom:1rem">
+          <table>
+            <thead><tr><th>الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+            <tbody id="equityRows"></tbody>
+            <tfoot id="equityFoot"></tfoot>
+          </table>
+        </div>
+
+        <div style="background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.2);border-radius:8px;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <span style="font-weight:600">إجمالي حقوق الملكية</span>
+          <span style="font-weight:700;color:var(--accent)" id="totalEquity">0.00</span>
+        </div>
+
+        <div style="background:rgba(201,169,110,0.12);border:2px solid var(--accent);border-radius:8px;padding:0.85rem 1rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:1rem">إجمالي الالتزامات + حقوق الملكية</span>
+          <span style="font-weight:800;font-size:1.2rem;color:var(--accent)" id="totalLiabEquity">0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="accounts.js"></script>
+<script>
+  window.onload = () => {
+    document.getElementById('asOfDate').valueAsDate = new Date();
+    render();
+  };
+
+  function render() {
+    let entries = loadEntries();
+    const asOf = document.getElementById('asOfDate').value;
+    if (asOf) entries = entries.filter(e => e.date <= asOf);
+
+    // Aggregate
+    const map = {};
+    entries.forEach(entry => {
+      entry.lines.forEach(line => {
+        if (!map[line.code]) map[line.code] = { code: line.code, name: line.name, type: line.type, debit: 0, credit: 0 };
+        map[line.code].debit += line.debit;
+        map[line.code].credit += line.credit;
+      });
+    });
+
+    const rows = Object.values(map);
+
+    // Balance for each account
+    const getBalance = (r) => {
+      if (r.type === 'asset' || r.type === 'expense') return r.debit - r.credit;
+      return r.credit - r.debit;
+    };
+
+    // ASSETS
+    const assetRows = rows.filter(r => r.type === 'asset');
+    // Split fixed vs current by code: 101xxx = fixed, rest = current
+    const fixedRows = assetRows.filter(r => r.code.startsWith('101'));
+    const currentRows = assetRows.filter(r => !r.code.startsWith('101'));
+
+    const totalFixed = fixedRows.reduce((s, r) => s + getBalance(r), 0);
+    const totalCurrent = currentRows.reduce((s, r) => s + getBalance(r), 0);
+    const totalAssets = totalFixed + totalCurrent;
+
+    // LIABILITIES
+    const liabRows = rows.filter(r => r.type === 'liability');
+    const nonCurrRows = liabRows.filter(r => r.code.startsWith('202'));
+    const currRows = liabRows.filter(r => !r.code.startsWith('202'));
+    const totalNonCurr = nonCurrRows.reduce((s, r) => s + getBalance(r), 0);
+    const totalCurr = currRows.reduce((s, r) => s + getBalance(r), 0);
+    const totalLiab = totalNonCurr + totalCurr;
+
+    // EQUITY
+    const equityRows = rows.filter(r => r.type === 'equity');
+    const totalEquity = equityRows.reduce((s, r) => s + getBalance(r), 0);
+
+    const totalLiabEquity = totalLiab + totalEquity;
+    const isBalanced = Math.abs(totalAssets - totalLiabEquity) < 0.01;
+
+    // Balance check
+    document.getElementById('balanceCheck').innerHTML = isBalanced
+      ? `<div class="alert alert-success">✅ الميزانية متوازنة — الأصول = الالتزامات + حقوق الملكية</div>`
+      : `<div class="alert alert-error">⚠️ الميزانية غير متوازنة — الفرق: ${fmt(Math.abs(totalAssets - totalLiabEquity))} EGP</div>`;
+
+    // Stats
+    document.getElementById('statsRow').innerHTML = `
+      <div class="stat-card blue"><div class="stat-label">إجمالي الأصول</div><div class="stat-value blue">${fmt(totalAssets)}</div></div>
+      <div class="stat-card red"><div class="stat-label">إجمالي الالتزامات</div><div class="stat-value red">${fmt(totalLiab)}</div></div>
+      <div class="stat-card gold"><div class="stat-label">حقوق الملكية</div><div class="stat-value gold">${fmt(totalEquity)}</div></div>
+      <div class="stat-card ${isBalanced ? 'green' : 'red'}"><div class="stat-label">التوازن</div><div class="stat-value ${isBalanced ? 'green' : 'red'}">${isBalanced ? '✅ متوازن' : '⚠️ غير متوازن'}</div></div>
+    `;
+
+    // Render section
+    fillTable('fixedAssets', 'fixedAssetsFoot', fixedRows, totalFixed, getBalance);
+    fillTable('currentAssets', 'currentAssetsFoot', currentRows, totalCurrent, getBalance);
+    fillTable('nonCurrLiab', 'nonCurrLiabFoot', nonCurrRows, totalNonCurr, getBalance);
+    fillTable('currLiab', 'currLiabFoot', currRows, totalCurr, getBalance);
+    fillTable('equityRows', 'equityFoot', equityRows, totalEquity, getBalance);
+
+    document.getElementById('totalAssets').textContent = fmt(totalAssets);
+    document.getElementById('totalLiab').textContent = fmt(totalLiab);
+    document.getElementById('totalEquity').textContent = fmt(totalEquity);
+    document.getElementById('totalLiabEquity').textContent = fmt(totalLiabEquity);
+  }
+
+  function fillTable(bodyId, footId, rows, total, getBalance) {
+    const body = document.getElementById(bodyId);
+    const foot = document.getElementById(footId);
+    if (rows.length === 0) {
+      body.innerHTML = `<tr><td colspan="2" style="color:var(--text2);text-align:center;padding:0.75rem">لا توجد بيانات</td></tr>`;
+      foot.innerHTML = '';
+      return;
+    }
+    body.innerHTML = rows.map(r => {
+      const b = getBalance(r);
+      return `<tr>
+        <td style="font-size:0.85rem">${r.name}</td>
+        <td style="font-weight:600;color:${b >= 0 ? 'var(--text)' : 'var(--red)'}">${fmt(Math.abs(b))}</td>
+      </tr>`;
+    }).join('');
+    foot.innerHTML = `<tr class="tfoot-row"><td>الإجمالي</td><td>${fmt(Math.abs(total))}</td></tr>`;
+  }
+</script>
+</body>
+</html>

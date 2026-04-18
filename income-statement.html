@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>قائمة الدخل - النظام المحاسبي</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">⚖️ <span>النظام</span> المحاسبي</div>
+  <ul class="nav-links">
+    <li><a href="index.html">📝 <span>القيود</span></a></li>
+    <li><a href="trial-balance.html">📊 <span>ميزان المراجعة</span></a></li>
+    <li><a href="income-statement.html" class="active">📈 <span>قائمة الدخل</span></a></li>
+    <li><a href="balance-sheet.html">🏦 <span>الميزانية</span></a></li>
+    <li><a href="dashboard.html">🖥️ <span>الداشبورد</span></a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>📈 قائمة الدخل</h1>
+    <p>الإيرادات — المصروفات = صافي الربح أو الخسارة</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>📅 من تاريخ</label>
+        <input type="date" id="dateFrom" onchange="render()" />
+      </div>
+      <div class="form-group">
+        <label>📅 إلى تاريخ</label>
+        <input type="date" id="dateTo" onchange="render()" />
+      </div>
+      <div class="form-group" style="justify-content:flex-end;flex-direction:row;align-items:flex-end;gap:0.5rem">
+        <button class="btn btn-ghost" onclick="resetFilters()">↺ الكل</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Net Result Banner -->
+  <div id="netBanner" style="margin-bottom:1.5rem"></div>
+
+  <!-- Stats Row -->
+  <div class="stats-grid" id="statsRow" style="margin-bottom:1.5rem"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+    <!-- Revenue Section -->
+    <div class="card">
+      <div class="card-title" style="color:var(--green)">📥 الإيرادات</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>كود الحساب</th><th>اسم الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+          <tbody id="revBody"></tbody>
+          <tfoot id="revFoot"></tfoot>
+        </table>
+      </div>
+      <div id="revEmpty"></div>
+    </div>
+
+    <!-- Expense Section -->
+    <div class="card">
+      <div class="card-title" style="color:var(--red)">📤 المصروفات</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>كود الحساب</th><th>اسم الحساب</th><th>المبلغ (EGP)</th></tr></thead>
+          <tbody id="expBody"></tbody>
+          <tfoot id="expFoot"></tfoot>
+        </table>
+      </div>
+      <div id="expEmpty"></div>
+    </div>
+  </div>
+
+  <!-- Net Profit Detail -->
+  <div class="card" style="margin-top:1.5rem" id="netCard"></div>
+</div>
+
+<script src="accounts.js"></script>
+<script>
+  window.onload = () => {
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
+    document.getElementById('dateFrom').value = new Date(y, m, 1).toISOString().split('T')[0];
+    document.getElementById('dateTo').value = new Date(y, m + 1, 0).toISOString().split('T')[0];
+    render();
+  };
+
+  function resetFilters() {
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    render();
+  }
+
+  function render() {
+    let entries = loadEntries();
+    const from = document.getElementById('dateFrom').value;
+    const to = document.getElementById('dateTo').value;
+    if (from) entries = entries.filter(e => e.date >= from);
+    if (to) entries = entries.filter(e => e.date <= to);
+
+    const revMap = {}, expMap = {};
+
+    entries.forEach(entry => {
+      entry.lines.forEach(line => {
+        if (line.type === 'revenue') {
+          if (!revMap[line.code]) revMap[line.code] = { code: line.code, name: line.name, amount: 0 };
+          revMap[line.code].amount += line.credit - line.debit;
+        }
+        if (line.type === 'expense') {
+          if (!expMap[line.code]) expMap[line.code] = { code: line.code, name: line.name, amount: 0 };
+          expMap[line.code].amount += line.debit - line.credit;
+        }
+      });
+    });
+
+    const revRows = Object.values(revMap).sort((a, b) => a.code.localeCompare(b.code));
+    const expRows = Object.values(expMap).sort((a, b) => a.code.localeCompare(b.code));
+
+    const totalRev = revRows.reduce((s, r) => s + r.amount, 0);
+    const totalExp = expRows.reduce((s, r) => s + r.amount, 0);
+    const netProfit = totalRev - totalExp;
+    const isProfit = netProfit >= 0;
+
+    // Stats
+    document.getElementById('statsRow').innerHTML = `
+      <div class="stat-card green">
+        <div class="stat-label">إجمالي الإيرادات</div>
+        <div class="stat-value green">${fmt(totalRev)}</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">إجمالي المصروفات</div>
+        <div class="stat-value red">${fmt(totalExp)}</div>
+      </div>
+      <div class="stat-card ${isProfit ? 'green' : 'red'}">
+        <div class="stat-label">هامش الربح</div>
+        <div class="stat-value ${isProfit ? 'green' : 'red'}">${totalRev > 0 ? ((netProfit / totalRev) * 100).toFixed(1) + '%' : '—'}</div>
+      </div>
+    `;
+
+    // Net banner
+    document.getElementById('netBanner').innerHTML = `
+      <div style="background:var(--surface);border:2px solid ${isProfit ? 'var(--green)' : 'var(--red)'};border-radius:var(--radius);padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:0.82rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.4rem">صافي ${isProfit ? 'الربح' : 'الخسارة'}</div>
+          <div style="font-family:'Cairo',sans-serif;font-size:2rem;font-weight:800;color:${isProfit ? 'var(--green)' : 'var(--red)'}">
+            ${isProfit ? '+' : '-'} ${fmt(Math.abs(netProfit))} <small style="font-size:0.9rem">EGP</small>
+          </div>
+        </div>
+        <div style="font-size:3rem">${isProfit ? '📈' : '📉'}</div>
+      </div>
+    `;
+
+    // Revenue table
+    if (revRows.length === 0) {
+      document.getElementById('revBody').innerHTML = '';
+      document.getElementById('revFoot').innerHTML = '';
+      document.getElementById('revEmpty').innerHTML = `<div class="empty-state"><div class="icon">📥</div><h3>لا توجد إيرادات</h3></div>`;
+    } else {
+      document.getElementById('revEmpty').innerHTML = '';
+      document.getElementById('revBody').innerHTML = revRows.map(r => `
+        <tr>
+          <td><code style="color:var(--accent);font-size:0.82rem">${r.code}</code></td>
+          <td>${r.name}</td>
+          <td style="color:var(--green);font-weight:600">${fmt(r.amount)}</td>
+        </tr>`).join('');
+      document.getElementById('revFoot').innerHTML = `<tr class="tfoot-row"><td colspan="2">الإجمالي</td><td>${fmt(totalRev)}</td></tr>`;
+    }
+
+    // Expense table
+    if (expRows.length === 0) {
+      document.getElementById('expBody').innerHTML = '';
+      document.getElementById('expFoot').innerHTML = '';
+      document.getElementById('expEmpty').innerHTML = `<div class="empty-state"><div class="icon">📤</div><h3>لا توجد مصروفات</h3></div>`;
+    } else {
+      document.getElementById('expEmpty').innerHTML = '';
+      document.getElementById('expBody').innerHTML = expRows.map(r => `
+        <tr>
+          <td><code style="color:var(--accent);font-size:0.82rem">${r.code}</code></td>
+          <td>${r.name}</td>
+          <td style="color:var(--red);font-weight:600">${fmt(r.amount)}</td>
+        </tr>`).join('');
+      document.getElementById('expFoot').innerHTML = `<tr class="tfoot-row"><td colspan="2">الإجمالي</td><td>${fmt(totalExp)}</td></tr>`;
+    }
+
+    // Net detail card
+    document.getElementById('netCard').innerHTML = `
+      <div class="card-title">🧮 ملخص النتيجة</div>
+      <table style="width:auto;margin-right:auto">
+        <tbody>
+          <tr><td style="padding:0.5rem 1rem;color:var(--text2)">إجمالي الإيرادات</td><td style="padding:0.5rem 1rem;color:var(--green);font-weight:700;text-align:left">${fmt(totalRev)}</td></tr>
+          <tr><td style="padding:0.5rem 1rem;color:var(--text2)">ناقص: إجمالي المصروفات</td><td style="padding:0.5rem 1rem;color:var(--red);font-weight:700;text-align:left">(${fmt(totalExp)})</td></tr>
+          <tr style="border-top:2px solid var(--border)"><td style="padding:0.75rem 1rem;font-weight:700">صافي ${isProfit ? 'الربح' : 'الخسارة'}</td><td style="padding:0.75rem 1rem;font-weight:800;font-size:1.1rem;color:${isProfit ? 'var(--green)' : 'var(--red)'};text-align:left">${fmt(Math.abs(netProfit))}</td></tr>
+        </tbody>
+      </table>
+    `;
+  }
+</script>
+</body>
+</html>
