@@ -568,3 +568,4 @@ function loadCustomAccounts() {
 function saveCustomAccounts(accs) {
   localStorage.setItem("custom_accounts", JSON.stringify(accs));
 }
+

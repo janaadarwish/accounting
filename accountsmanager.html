@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Manager - Accounting System</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface2: #f9fafb;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --green: #2ecc71;
+      --red: #e74c3c;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+      --accent: #4f46e5;
+      --accent-light: #eef2ff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .nav-links { display: flex; gap: 4px; list-style: none; }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-light); color: var(--accent); }
+
+    /* PAGE */
+    .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+    .page-header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+
+    /* CARD */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+    .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+
+    /* BUTTONS */
+    .btn {
+      border: none; border-radius: 7px; cursor: pointer;
+      padding: 8px 16px; font-size: 0.85rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+    .btn-success { background: var(--green); color: white; }
+    .btn-success:hover { background: #27ae60; }
+    .btn-warning { background: var(--orange); color: white; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover { background: #c0392b; }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .toolbar input, .toolbar select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px;
+      font-size: 0.85rem; background: var(--surface2); color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    .toolbar input:focus, .toolbar select:focus { border-color: var(--accent); }
+    .toolbar input[type="search"] { min-width: 220px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead { background: var(--surface2); }
+    th { padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+    .no-data { text-align: center; padding: 3rem; color: var(--text-muted); }
+
+    /* BADGES */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-asset    { background: #dbeafe; color: #1d4ed8; }
+    .badge-liability{ background: #fee2e2; color: #b91c1c; }
+    .badge-equity   { background: #d1fae5; color: #065f46; }
+    .badge-expense  { background: #fef3c7; color: #92400e; }
+    .badge-revenue  { background: #f3e8ff; color: #6b21a8; }
+    .badge-contra   { background: #e5e7eb; color: #374151; }
+
+    .code-cell { font-family: 'Courier New', monospace; font-size: 0.82rem; color: var(--accent); font-weight: 600; }
+
+    /* LEVEL indicator */
+    .level-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .l1 { background: #1e293b; } .l2 { background: #3b82f6; }
+    .l3 { background: #10b981; } .l4 { background: #f59e0b; }
+
+    /* MODAL OVERLAY */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%; max-width: 500px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.25s cubic-bezier(.34,1.3,.64,1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .modal-header h2 { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.3rem; color: var(--text-muted); line-height: 1;
+      padding: 4px; border-radius: 6px; transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+    /* FORM */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--border); border-radius: 7px;
+      font-size: 0.9rem; background: var(--surface2); color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); background: white; }
+    .form-group input.readonly { opacity: 0.6; cursor: not-allowed; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--text); color: white;
+      padding: 12px 18px; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+      z-index: 9999;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s cubic-bezier(.34,1.3,.64,1);
+      box-shadow: var(--shadow-lg);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #065f46; }
+    .toast.error   { background: #b91c1c; }
+
+    /* STATS ROW */
+    .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .stat-pill {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 99px; padding: 6px 16px;
+      font-size: 0.82rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+      box-shadow: var(--shadow);
+    }
+    .stat-pill span { color: var(--text-muted); font-weight: 400; }
+
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .modal { padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">⚖️ <span>Accounting</span> System</div>
+  <ul class="nav-links">
+    <li><a href="index.html">📝 Entries</a></li>
+    <li><a href="trial-balance.html">📊 Trial Balance</a></li>
+    <li><a href="income-statement.html">📈 Income Statement</a></li>
+    <li><a href="balance-sheet.html">🏦 Balance Sheet</a></li>
+    <li><a href="dashboard.html">🖥️ Dashboard</a></li>
+    <li><a href="accounts-manager.html" class="active">🗂️ Accounts</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🗂️ Chart of Accounts</h1>
+      <p>Manage your account structure — add, edit, or review accounts</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="resetToDefault()">🔄 Reset to Default</button>
+      <button class="btn btn-warning" onclick="openEditModal()">✏️ Edit Account</button>
+      <button class="btn btn-primary" onclick="openAddModal()">➕ Add New Account</button>
+    </div>
+  </div>
+
+  <div id="statsRow" class="stats-row"></div>
+
+  <div class="card">
+    <div class="toolbar">
+      <input type="search" id="searchInput" placeholder="🔍 Search by code or name…" oninput="renderTable()" />
+      <select id="typeFilter" onchange="renderTable()">
+        <option value="">All Types</option>
+        <option value="asset">Assets</option>
+        <option value="liability">Liabilities</option>
+        <option value="equity">Equity</option>
+        <option value="expense">Expenses</option>
+        <option value="revenue">Revenue</option>
+        <option value="contra_asset">Contra Asset</option>
+      </select>
+      <select id="levelFilter" onchange="renderTable()">
+        <option value="">All Levels</option>
+        <option value="1">Level 1 (Root)</option>
+        <option value="2">Level 2</option>
+        <option value="3">Level 3</option>
+        <option value="4">Level 4 (Leaf)</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Account Name</th>
+            <th>Type</th>
+            <th>Level</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="accountsBody"></tbody>
+      </table>
+    </div>
+    <div id="tableFooter" style="padding:12px 14px;font-size:0.82rem;color:var(--text-muted);border-top:1px solid var(--border)"></div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>➕ Add New Account</h2>
+      <button class="modal-close" onclick="closeModal('addOverlay')">✕</button>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Account Code *</label>
+        <input type="text" id="add_code" placeholder="e.g. 102001011" />
+      </div>
+      <div class="form-group">
+        <label>Level *</label>
+        <select id="add_level">
+          <option value="1">Level 1 – Root</option>
+          <option value="2">Level 2</option>
+          <option value="3">Level 3</option>
+          <option value="4" selected>Level 4 – Leaf</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Account Name *</label>
+      <input type="text" id="add_name" placeholder="e.g. Cash on Hand - Branch" />
+    </div>
+
+    <div class="form-group">
+      <label>Account Type *</label>
+      <select id="add_type">
+        <option value="asset">Asset</option>
+        <option value="liability">Liability</option>
+        <option value="equity">Equity</option>
+        <option value="expense">Expense</option>
+        <option value="revenue">Revenue</option>
+        <option value="contra_asset">Contra Asset</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Parent Account (optional)</label>
+      <select id="add_parent">
+        <option value="">-- No Parent --</option>
+      </select>
+    </div>
+
+    <div id="addAlert" style="margin-bottom:0.5rem"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addOverlay')">Cancel</button>
+      <button class="btn btn-success" onclick="saveNewAccount()">💾 Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>✏️ Edit Account</h2>
+      <button class="modal-close" onclick="closeModal('editOverlay')">✕</button>
+    </div>
+
+    <!-- Step 1: search & select -->
+    <div id="editStep1">
+      <div class="form-group">
+        <label>Search by Code or Name</label>
+        <input type="search" id="editSearch" placeholder="e.g. 102001001 or Cash on Hand…"
+          oninput="filterEditList()" autocomplete="off" />
+      </div>
+      <div id="editList" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;"></div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px">Click an account to select it for editing.</p>
+    </div>
+
+    <!-- Step 2: edit form (hidden until account chosen) -->
+    <div id="editStep2" style="display:none">
+      <div style="background:var(--accent-light);border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:0.85rem;color:var(--accent);font-weight:600" id="editSelectedLabel"></span>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.78rem" onclick="backToSearch()">← Change</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Account Code</label>
+          <input type="text" id="edit_code" class="readonly" readonly />
+        </div>
+        <div class="form-group">
+          <label>Level</label>
+          <select id="edit_level">
+            <option value="1">Level 1 – Root</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+            <option value="4">Level 4 – Leaf</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Account Name *</label>
+        <input type="text" id="edit_name" placeholder="Account name" />
+      </div>
+
+      <div class="form-group">
+        <label>Account Type *</label>
+        <select id="edit_type">
+          <option value="asset">Asset</option>
+          <option value="liability">Liability</option>
+          <option value="equity">Equity</option>
+          <option value="expense">Expense</option>
+          <option value="revenue">Revenue</option>
+          <option value="contra_asset">Contra Asset</option>
+        </select>
+      </div>
+
+      <div id="editAlert" style="margin-bottom:0.5rem"></div>
+
+      <div class="modal-footer">
+        <button class="btn btn-danger" onclick="deleteAccount()">🗑️ Delete</button>
+        <button class="btn btn-ghost" onclick="closeModal('editOverlay')">Cancel</button>
+        <button class="btn btn-warning" onclick="saveEditAccount()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── helpers ──────────────────────────────────────────────────────────────
+  const HARDCODED_CODES = new Set(); // will be filled from ACCOUNTS const if available
+
+  function loadAccounts() {
+    return JSON.parse(localStorage.getItem('accounts') || '[]');
+  }
+  function saveAccountsToStorage(accs) {
+    localStorage.setItem('accounts', JSON.stringify(accs));
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  function badgeFor(type) {
+    const map = {
+      asset: 'badge-asset', liability: 'badge-liability', equity: 'badge-equity',
+      expense: 'badge-expense', revenue: 'badge-revenue', contra_asset: 'badge-contra'
+    };
+    const labels = {
+      asset: 'Asset', liability: 'Liability', equity: 'Equity',
+      expense: 'Expense', revenue: 'Revenue', contra_asset: 'Contra Asset'
+    };
+    return `<span class="badge ${map[type] || ''}">${labels[type] || type}</span>`;
+  }
+
+  function levelLabel(l) {
+    const colors = ['','l1','l2','l3','l4'];
+    return `<span class="level-dot ${colors[l]||''}"></span> Level ${l}`;
+  }
+
+  // ── render ────────────────────────────────────────────────────────────────
+  function renderStats() {
+    const accs = loadAccounts();
+    const types = ['asset','liability','equity','expense','revenue','contra_asset'];
+    const labels = { asset:'Assets', liability:'Liabilities', equity:'Equity', expense:'Expenses', revenue:'Revenue', contra_asset:'Contra' };
+    const row = document.getElementById('statsRow');
+    row.innerHTML = `<div class="stat-pill">📋 Total <span>${accs.length}</span></div>` +
+      types.map(t => {
+        const n = accs.filter(a => a.type === t).length;
+        return n ? `<div class="stat-pill">${badgeFor(t)} <span>${n}</span></div>` : '';
+      }).join('');
+  }
+
+  function renderTable() {
+    const accs = loadAccounts();
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const tf = document.getElementById('typeFilter').value;
+    const lf = document.getElementById('levelFilter').value;
+
+    const filtered = accs.filter(a => {
+      const matchQ = !q || a.code.toLowerCase().includes(q) || a.name.toLowerCase().includes(q);
+      const matchT = !tf || a.type === tf;
+      const matchL = !lf || String(a.level) === lf;
+      return matchQ && matchT && matchL;
+    });
+
+    const tbody = document.getElementById('accountsBody');
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="no-data">No accounts found.</td></tr>`;
+    } else {
+      tbody.innerHTML = filtered.map(a => `
+        <tr>
+          <td class="code-cell">${a.code.trim()}</td>
+          <td>${a.name}</td>
+          <td>${badgeFor(a.type)}</td>
+          <td>${levelLabel(a.level)}</td>
+          <td></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('tableFooter').textContent =
+      `Showing ${filtered.length} of ${accs.length} accounts`;
+  }
+
+  // ── Add Modal ─────────────────────────────────────────────────────────────
+  function openAddModal() {
+    document.getElementById('add_code').value = '';
+    document.getElementById('add_name').value = '';
+    document.getElementById('add_level').value = '4';
+    document.getElementById('add_type').value = 'asset';
+    document.getElementById('addAlert').innerHTML = '';
+
+    // populate parent dropdown
+    const sel = document.getElementById('add_parent');
+    sel.innerHTML = '<option value="">-- No Parent --</option>';
+    loadAccounts().forEach(a => {
+      sel.innerHTML += `<option value="${a.code.trim()}">${a.code.trim()} | ${a.name}</option>`;
+    });
+
+    document.getElementById('addOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('add_code').focus(), 100);
+  }
+
+  function saveNewAccount() {
+    const code = document.getElementById('add_code').value.trim();
+    const name = document.getElementById('add_name').value.trim();
+    const level = parseInt(document.getElementById('add_level').value);
+    const type  = document.getElementById('add_type').value;
+    const alertEl = document.getElementById('addAlert');
+
+    if (!code || !name) {
+      alertEl.innerHTML = `<div style="color:var(--red);font-size:0.85rem;padding:8px;background:#fee2e2;border-radius:6px">⚠️ Code and Name are required.</div>`;
+      return;
+    }
+
+    const accs = loadAccounts();
+    if (accs.find(a => a.code.trim() === code)) {
+      alertEl.innerHTML = `<div style="color:var(--red);font-size:0.85rem;padding:8px;background:#fee2e2;border-radius:6px">⚠️ Account code "${code}" already exists.</div>`;
+      return;
+    }
+
+    accs.push({ code, name, level, type });
+    // sort by code
+    accs.sort((a, b) => a.code.trim().localeCompare(b.code.trim(), undefined, { numeric: true }));
+    saveAccountsToStorage(accs);
+
+    closeModal('addOverlay');
+    renderStats();
+    renderTable();
+    showToast(`Account "${code} | ${name}" added successfully.`);
+  }
+
+  // ── Edit Modal ────────────────────────────────────────────────────────────
+  let _editCode = null;
+
+  function openEditModal() {
+    _editCode = null;
+    document.getElementById('editSearch').value = '';
+    document.getElementById('editAlert').innerHTML = '';
+    document.getElementById('editStep1').style.display = '';
+    document.getElementById('editStep2').style.display = 'none';
+    renderEditList('');
+    document.getElementById('editOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('editSearch').focus(), 100);
+  }
+
+  function renderEditList(q) {
+    const accs = loadAccounts();
+    const filtered = q
+      ? accs.filter(a => a.code.trim().toLowerCase().includes(q) || a.name.toLowerCase().includes(q))
+      : accs;
+
+    const list = document.getElementById('editList');
+    if (!filtered.length) {
+      list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:0.85rem">No accounts match.</div>`;
+      return;
+    }
+    list.innerHTML = filtered.slice(0, 80).map(a => `
+      <div onclick="selectEditAccount('${a.code.trim().replace(/'/g,"\\'")}')"
+        style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;transition:background 0.1s"
+        onmouseover="this.style.background='var(--accent-light)'"
+        onmouseout="this.style.background=''">
+        <span style="font-family:monospace;font-size:0.8rem;color:var(--accent);min-width:100px">${a.code.trim()}</span>
+        <span style="font-size:0.88rem;flex:1">${a.name}</span>
+        ${badgeFor(a.type)}
+      </div>
+    `).join('') + (filtered.length > 80 ? `<div style="padding:8px 14px;font-size:0.78rem;color:var(--text-muted)">…and ${filtered.length - 80} more. Narrow your search.</div>` : '');
+  }
+
+  function filterEditList() {
+    renderEditList(document.getElementById('editSearch').value.trim().toLowerCase());
+  }
+
+  function selectEditAccount(code) {
+    const accs = loadAccounts();
+    const acc = accs.find(a => a.code.trim() === code);
+    if (!acc) return;
+
+    _editCode = acc.code.trim();
+    document.getElementById('editSelectedLabel').textContent = `${acc.code.trim()} | ${acc.name}`;
+    document.getElementById('edit_code').value = acc.code.trim();
+    document.getElementById('edit_name').value = acc.name;
+    document.getElementById('edit_level').value = acc.level;
+    document.getElementById('edit_type').value = acc.type;
+    document.getElementById('editAlert').innerHTML = '';
+
+    document.getElementById('editStep1').style.display = 'none';
+    document.getElementById('editStep2').style.display = '';
+    setTimeout(() => document.getElementById('edit_name').focus(), 50);
+  }
+
+  function backToSearch() {
+    _editCode = null;
+    document.getElementById('editStep1').style.display = '';
+    document.getElementById('editStep2').style.display = 'none';
+    document.getElementById('editSearch').focus();
+  }
+
+  function saveEditAccount() {
+    const name  = document.getElementById('edit_name').value.trim();
+    const level = parseInt(document.getElementById('edit_level').value);
+    const type  = document.getElementById('edit_type').value;
+    const alertEl = document.getElementById('editAlert');
+
+    if (!name) {
+      alertEl.innerHTML = `<div style="color:var(--red);font-size:0.85rem;padding:8px;background:#fee2e2;border-radius:6px">⚠️ Account name is required.</div>`;
+      return;
+    }
+
+    const accs = loadAccounts();
+    const idx = accs.findIndex(a => a.code.trim() === _editCode);
+    if (idx === -1) { showToast('Account not found.', 'error'); return; }
+
+    accs[idx].name  = name;
+    accs[idx].level = level;
+    accs[idx].type  = type;
+    saveAccountsToStorage(accs);
+
+    closeModal('editOverlay');
+    renderStats();
+    renderTable();
+    showToast(`Account "${_editCode}" updated successfully.`);
+  }
+
+  function deleteAccount() {
+    if (!confirm(`Delete account "${_editCode}"? This cannot be undone.`)) return;
+
+    // check if used in journal entries
+    const entries = JSON.parse(localStorage.getItem('journal_entries') || '[]');
+    const inUse = entries.some(e => e.lines && e.lines.some(l => l.code && l.code.trim() === _editCode));
+    if (inUse) {
+      document.getElementById('editAlert').innerHTML =
+        `<div style="color:var(--red);font-size:0.85rem;padding:8px;background:#fee2e2;border-radius:6px">⚠️ This account is used in journal entries and cannot be deleted.</div>`;
+      return;
+    }
+
+    const accs = loadAccounts().filter(a => a.code.trim() !== _editCode);
+    saveAccountsToStorage(accs);
+    closeModal('editOverlay');
+    renderStats();
+    renderTable();
+    showToast(`Account "${_editCode}" deleted.`);
+  }
+
+  // ── Reset ─────────────────────────────────────────────────────────────────
+  function resetToDefault() {
+    if (!confirm('Reset all accounts to the default chart? Custom accounts will be removed.')) return;
+    // trigger re-init via clearing storage key so accounts.js re-seeds
+    localStorage.removeItem('accounts');
+    location.reload();
+  }
+
+  // ── Modal helpers ─────────────────────────────────────────────────────────
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+  // close on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+  });
+  // close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(el => closeModal(el.id));
+  });
+
+  // ── init ──────────────────────────────────────────────────────────────────
+  window.onload = () => {
+    renderStats();
+    renderTable();
+  };
+</script>
+
+</body>
+</html>
