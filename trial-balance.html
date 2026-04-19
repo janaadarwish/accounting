@@ -107,16 +107,33 @@
     if (to) entries = entries.filter(e => e.date <= to);
 
     const map = {};
+    // entries.forEach(entry => {
+    //   entry.lines.forEach(line => {
+    //     if (!map[line.code]) {
+    //       map[line.code] = { code: line.code, name: line.name, type: line.type, debit: 0, credit: 0 };
+    //     }
+    //     map[line.code].debit += (parseFloat(line.debit) || 0);
+    //     map[line.code].credit += (parseFloat(line.credit) || 0);
+    //   });
+    // });
+    // 
     entries.forEach(entry => {
       entry.lines.forEach(line => {
+        const acc = getAccount(line.code); 
         if (!map[line.code]) {
-          map[line.code] = { code: line.code, name: line.name, type: line.type, debit: 0, credit: 0 };
-        }
-        map[line.code].debit += (parseFloat(line.debit) || 0);
-        map[line.code].credit += (parseFloat(line.credit) || 0);
-      });
-    });
+          map[line.code] = { 
+        code: line.code, 
+        name: acc?.name || "Unknown", 
+        type: acc?.type || "unknown", 
+        debit: 0, 
+        credit: 0 
+      };
+    }
 
+    map[line.code].debit += (parseFloat(line.debit) || 0);
+    map[line.code].credit += (parseFloat(line.credit) || 0);
+  });
+});
     let rows = Object.values(map).sort((a, b) => a.code.localeCompare(b.code));
     if (typeFilter !== 'all') rows = rows.filter(r => r.type === typeFilter);
 

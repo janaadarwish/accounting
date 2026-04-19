@@ -87,34 +87,80 @@
 
 <script src="accounts.js"></script>
 <script>
+
+  function getNetIncome() {
+    const entries = loadEntries();
+    
+    let rev = 0;
+    let exp = 0;
+  
+    entries.forEach(e => {
+      e.lines.forEach(l => {
+        const acc = getAccount(l.code);
+        if (!acc) return;
+      
+        if (acc.type === 'revenue') {
+          rev += (l.credit - l.debit);
+        }
+      
+        if (acc.type === 'expense') {
+          exp += (l.debit - l.credit);
+        }
+      });
+    });
+  
+    return rev - exp;
+  }
+
   window.onload = () => {
     document.getElementById('asOfDate').valueAsDate = new Date();
     render();
   };
 
+
+
   function render() {
-    let entries = loadEntries();
-    const asOf = document.getElementById('asOfDate').value;
-    if (asOf) entries = entries.filter(e => e.date <= asOf);
+  let entries = loadEntries();
+  const asOf = document.getElementById('asOfDate').value;
+  if (asOf) entries = entries.filter(e => e.date <= asOf);
 
-    const map = {};
-    let currentPeriodProfit = 0;
+  const currentPeriodProfit = getNetIncome();
+  const map = {};
 
-    entries.forEach(entry => {
-      entry.lines.forEach(line => {
+  entries.forEach(entry => {
+    entry.lines.forEach(line => {
 
-        if (line.type === 'revenue') currentPeriodProfit += (line.credit - line.debit);
-        if (line.type === 'expense') currentPeriodProfit -= (line.debit - line.credit);
+      const acc = getAccount(line.code);
+      if (!acc) return; // 👈 أمان
 
-        if (['asset', 'liability', 'equity'].includes(line.type)) {
-          if (!map[line.code]) map[line.code] = { code: line.code, name: line.name, type: line.type, balance: 0 };
-          const change = (line.type === 'asset') ? (line.debit - line.credit) : (line.credit - line.debit);
-          map[line.code].balance += change;
+      const debit = parseFloat(line.debit) || 0;
+      const credit = parseFloat(line.credit) || 0;
+
+      // const currentPeriodProfit = getNetIncome();
+      
+      // assets / liabilities / equity
+      if (['asset', 'liability', 'equity'].includes(acc.type)) { 
+        
+        if (!map[line.code]){
+          map[line.code] = { 
+            code: line.code, 
+            name: acc.name, 
+            type: acc.type, 
+            balance: 0
+          };
         }
-      });
-    });
 
-    const rows = Object.values(map);
+        const change = (acc.type === 'asset')
+          ? (debit - credit)
+          : (credit - debit);
+
+        map[line.code].balance += change;
+      }
+
+    });
+  });
+
+      const rows = Object.values(map);
 
     const fixed = rows.filter(r => r.type === 'asset' && r.code.startsWith('101'));
     const currentA = rows.filter(r => r.type === 'asset' && !r.code.startsWith('101'));
@@ -141,7 +187,7 @@
       <div class="stat-card gold"><div class="stat-label">Total Equity</div><div class="stat-value">${fmt(totalEquity)}</div></div>
     `;
 
-    fillTable('fixedAssetsTable', fixed);
+        fillTable('fixedAssetsTable', fixed);
     fillTable('currentAssetsTable', currentA);
     fillTable('nonCurrLiabTable', longTerm);
     fillTable('currLiabTable', currentL);
@@ -154,7 +200,8 @@
     document.getElementById('totalLiab').textContent = fmt(totalLiab);
     document.getElementById('totalLiabEquity').textContent = fmt(totalLiabEquity);
   }
-
+  
+  
   function fillTable(id, rows) {
     const table = document.getElementById(id);
     if (rows.length === 0) {
@@ -165,6 +212,8 @@
       <tr><td>${r.name}</td><td style="text-align:right; font-weight:600">${fmt(r.balance)}</td></tr>
     `).join('');
   }
+
+
 
   function fmt(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2 }); }
   function loadEntries() { return JSON.parse(localStorage.getItem('journal_entries') || '[]'); }
