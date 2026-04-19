@@ -102,12 +102,27 @@
 
     entries.forEach(entry => {
       entry.lines.forEach(line => {
-        if (line.type === 'revenue') {
-          if (!revMap[line.code]) revMap[line.code] = { code: line.code, name: line.name, amount: 0 };
+        const acc = getAccount(line.code);
+        
+        if (acc?.type === 'revenue') {
+          if (!revMap[line.code]) {
+            revMap[line.code] = {
+              code: line.code,
+              name: acc.name,
+              amount: 0
+            };
+          }
           revMap[line.code].amount += (line.credit - line.debit);
         }
-        if (line.type === 'expense') {
-          if (!expMap[line.code]) expMap[line.code] = { code: line.code, name: line.name, amount: 0 };
+    
+        if (acc?.type === 'expense') {
+          if (!expMap[line.code]) {
+            expMap[line.code] = {
+              code: line.code,
+              name: acc.name,
+              amount: 0
+            };
+          }
           expMap[line.code].amount += (line.debit - line.credit);
         }
       });

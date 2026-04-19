@@ -66,7 +66,6 @@
         <input type="text" id="entryNumber" readonly style="opacity:0.6" />
       </div>
     </div>
-
     <div id="lineItems"></div>
 
     <button class="btn btn-ghost" onclick="addLine()" style="margin-top:0.5rem; margin-bottom:1.2rem">
@@ -223,6 +222,7 @@
     const entries = loadEntries();
     entries.push(entry);
     saveEntries(entries);
+    window.dispatchEvent(new Event("journal_updated"));
     clearForm();
     renderEntries();
   }
