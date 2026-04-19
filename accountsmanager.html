@@ -26,7 +26,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* NAVBAR */
     .navbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -53,7 +52,6 @@
     }
     .nav-links a:hover, .nav-links a.active { background: var(--accent-light); color: var(--accent); }
 
-    /* PAGE */
     .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
     .page-header {
       display: flex;
@@ -66,11 +64,9 @@
     .page-header h1 { font-size: 1.5rem; font-weight: 700; }
     .page-header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
 
-    /* CARD */
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
     .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
 
-    /* BUTTONS */
     .btn {
       border: none; border-radius: 7px; cursor: pointer;
       padding: 8px 16px; font-size: 0.85rem; font-weight: 600;
@@ -88,7 +84,6 @@
     .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
     .btn-ghost:hover { background: var(--surface2); color: var(--text); }
 
-    /* TOOLBAR */
     .toolbar {
       display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
       margin-bottom: 1rem;
@@ -101,7 +96,6 @@
     .toolbar input:focus, .toolbar select:focus { border-color: var(--accent); }
     .toolbar input[type="search"] { min-width: 220px; }
 
-    /* TABLE */
     .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     thead { background: var(--surface2); }
@@ -111,7 +105,6 @@
     tr:hover td { background: var(--surface2); }
     .no-data { text-align: center; padding: 3rem; color: var(--text-muted); }
 
-    /* BADGES */
     .badge {
       display: inline-block; padding: 3px 10px; border-radius: 99px;
       font-size: 0.75rem; font-weight: 600;
@@ -125,12 +118,10 @@
 
     .code-cell { font-family: 'Courier New', monospace; font-size: 0.82rem; color: var(--accent); font-weight: 600; }
 
-    /* LEVEL indicator */
     .level-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
     .l1 { background: #1e293b; } .l2 { background: #3b82f6; }
     .l3 { background: #10b981; } .l4 { background: #f59e0b; }
 
-    /* MODAL OVERLAY */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(15,23,42,0.55);
@@ -167,7 +158,6 @@
     }
     .modal-close:hover { background: var(--surface2); color: var(--text); }
 
-    /* FORM */
     .form-group { margin-bottom: 1rem; }
     .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
     .form-group input, .form-group select {
@@ -183,7 +173,6 @@
 
     .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
 
-    /* TOAST */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
       background: var(--text); color: white;
@@ -199,7 +188,6 @@
     .toast.success { background: #065f46; }
     .toast.error   { background: #b91c1c; }
 
-    /* STATS ROW */
     .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .stat-pill {
       background: var(--surface); border: 1px solid var(--border);
@@ -301,7 +289,6 @@
       <div class="form-group">
         <label>Level *</label>
         <select id="add_level">
-          <option value="1">Level 1 – Root</option>
           <option value="2">Level 2</option>
           <option value="3">Level 3</option>
           <option value="4" selected>Level 4 – Leaf</option>
@@ -342,7 +329,6 @@
   </div>
 </div>
 
-<!-- EDIT MODAL -->
 <div class="modal-overlay" id="editOverlay">
   <div class="modal">
     <div class="modal-header">
@@ -350,7 +336,6 @@
       <button class="modal-close" onclick="closeModal('editOverlay')">✕</button>
     </div>
 
-    <!-- Step 1: search & select -->
     <div id="editStep1">
       <div class="form-group">
         <label>Search by Code or Name</label>
@@ -361,7 +346,6 @@
       <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px">Click an account to select it for editing.</p>
     </div>
 
-    <!-- Step 2: edit form (hidden until account chosen) -->
     <div id="editStep2" style="display:none">
       <div style="background:var(--accent-light);border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:0.85rem;color:var(--accent);font-weight:600" id="editSelectedLabel"></span>
