@@ -17,6 +17,14 @@ LedgerFlow is a functional, browser-based accounting platform built to streamlin
 * **Libraries:** [SheetJS (XLSX)](https://sheetjs.com/) for Excel processing.
 * **Storage:** Browser `localStorage`.
 
+  ## The Development Team
+
+| Name | GitHub Profile |
+| :--- | :--- |
+| **Abdulrahman mahmoud** | [@alwakeeeel](https://github.com/alwakeeeel) |
+| **Jana Amin** | [@janaadarwish](https://github.com/janaadarwish) |
+| **nour zikry** | [@nourzekry](https://github.com/nourzekry) |
+
 ## 📂 Project Structure
 
 ```text
